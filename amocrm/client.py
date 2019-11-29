@@ -1,5 +1,6 @@
 from requests import Session, ConnectionError, ConnectTimeout
-from typing import Optional
+from typing import Optional, Union
+from urllib.parse import urlencode
 
 
 class AmoException(Exception):
@@ -65,9 +66,48 @@ class Amo(object):
         :return: dict
         """
         with_params = [param for param, value in locals().items() if value]
-        url = f'{self.crm_url}api/v2/account?'
+        url = f'{self.crm_url}api/v2/account'
         url += '?with=' + ''.joins(p for p in with_params)
         return self._send_api_request('get', url)
 
+    def create_or_update_leads(self, add: Optional[list] = None, update: Optional[list] = None) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/api/leads
+        :param add: list (list of leads)
+        :param update: list (list of leads)
+        :return: dict
+        """
+        url = f'{self.crm_url}api/v2/leads'
+        params = {}
+        if add is not None:
+            params['add'] = add
+        if update is not None:
+            params['update'] = update
+        return self._send_api_request('post', url, params)
 
+    def get_leads(self, limit_rows: int = 500, limit_offset: int = 0, id: Union[list, int, None] = None,
+                  query: Optional[str] = None, status: Union[int, list, None] = None,
+                  with_params: Optional[list] = None) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/api/leads
+        :param limit_rows: int (limit of rows, default=500)
+        :param limit_offset: int (offset, default=0)
+        :param id: list or int (lead ids)
+        :param query: str (query)
+        :param status: list or int (id lead statuses)
+        :param with_params: list (is_price_modified_by_robot, loss_reason_name, only_deleted)
+        :return: dict
+        """
+        url = f'{self.crm_url}api/v2/leads'
+        params = {'limit_rows': limit_rows, 'limit_offset': limit_offset}
+        if id is not None:
+            params['id'] = ','.join(i for i in id) if isinstance(id, list) else id
+        if query is not None:
+            params['query'] = query
+        if status is not None:
+            params['status'] = ','.join(i for i in status) if isinstance(status, list) else status
+        if with_params:
+            params['with'] = ','.join(param for param in with_params)
+        url += '?' + urlencode(params)
+        return self._send_api_request('get', url)
 
