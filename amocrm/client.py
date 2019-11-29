@@ -42,10 +42,13 @@ class Amocrm(object):
 
     def _send_api_request(self, method: str, url: str, data: Optional[dict] = None) -> dict:
         try:
-            response = self.session.__getattribute__(method)(url, json=data).json()
-            if 'error' in response:
-                raise AmoException(response)
-            return response
+            response = self.session.__getattribute__(method)(url, json=data)
+            if response.status_code == 204:
+                return {}
+            json_data = response.json()
+            if 'error' in json_data:
+                raise AmoException(json_data)
+            return json_data
         except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
             raise AmoException({'error': str(e)})
 
@@ -282,7 +285,7 @@ class Amocrm(object):
         url = f'{self.crm_url}/api/v2/customers_periods'
         return self._send_api_request('get', url)
 
-    def create_or_create_tasks(self, add: Optional[list] = None, update: Optional[list] = None) -> dict:
+    def create_or_update_tasks(self, add: Optional[list] = None, update: Optional[list] = None) -> dict:
         """
         doc - https://www.amocrm.ru/developers/content/api/tasks
         :param add: list (list of tasks)
