@@ -58,9 +58,10 @@ class Amocrm(object):
         :param with_task_types: bool
         :return: dict
         """
-        with_params = [param for param, value in locals().items() if value]
+        params = {k.replace('with_', ''): v for k, v in locals().items() if k != 'self'}
+        with_params = [param for param, value in params.items() if value]
         url = f'{self.crm_url}/api/v2/account'
-        url += '?with=' + ''.joins(p for p in with_params)
+        url += '?with=' + ','.join(p for p in with_params)
         return self._send_api_request('get', url)
 
     def _create_or_update(self, endpoint: str, add: Optional[list] = None, update: Optional[list] = None) -> dict:
