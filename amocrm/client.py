@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from requests import Session, ConnectionError, ConnectTimeout
 from typing import Optional, Union
 from urllib.parse import urlencode
@@ -40,10 +41,13 @@ class Amocrm(object):
         self.session = self._init_session(params)
 
     def _send_api_request(self, method: str, url: str, data: Optional[dict] = None) -> dict:
-        response = self.session.__getattribute__(method)(url, json=data).json()
-        if 'error' in response:
-            raise AmoException(response)
-        return response
+        try:
+            response = self.session.__getattribute__(method)(url, json=data).json()
+            if 'error' in response:
+                raise AmoException(response)
+            return response
+        except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
+            raise AmoException({'error': str(e)})
 
     def get_account_info(self, with_custom_fields: bool = False, with_users: bool = False,
                          with_pipelines: bool = True, with_groups: bool = False, with_note_types: bool = False,
