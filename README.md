@@ -269,3 +269,156 @@ customers = client.get_customers(limit_rows=20, limit_offset=50)
 delete_ids = ['123', '1234', '12345']
 result = client.delete_customers(delete_ids)
 ```
+## create or update customers
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  list  | None |
+| update    | list |  None |
+```python
+add = [{
+    "name": "ООО СпецГорСтрой",
+    "next_date": "1508878800",
+    "created_at": "1508533200",
+    "responsible_user_id": "504141",
+    "created_by": "504141",
+    "next_price": "5000",
+    "periodicity": "7",
+    "tags": "продажи, маркеры",
+    "period_id": "15489654",
+    "contacts_id": [
+        "496531"
+    ],
+    "company_id": "475621"}]
+update = [{
+    "id": "466791",
+    "updated_at": "1508619600",
+    "next_date": "1508878800",
+    "next_price": "1508706000",
+    "custom_fields": [{
+        "id": "4400021",
+        "values": [
+            "3692471",
+            "3692472",
+            "3692473"
+        ]
+    }]
+}]
+result = client.create_or_update_companies(add=add, update=update)
+```
+## get customers
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| query    | Optional[str]  |  None |
+| status    | Optional[str]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
+| with_params    | Optional[list]  |  None |
+
+```python
+customers = client.get_customers(limit_rows=20, limit_offset=50)
+```
+## delete customers
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| delete_ids     |  list  | required |
+```python
+delete_ids = ['123', '1234', '12345']
+result = client.delete_customers(delete_ids)
+```
+
+## create transactions
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  list  | required |
+```python
+add = [{
+    "customer_id": "466791",
+    "date": "1507582800",
+    "price": "15000",
+    "comment": "Всё прошло успешно",
+    "next_date": "1508878800",
+    "next_price": "20000",
+    "elements": {
+        9999: {
+            111111: 3
+        }
+    }
+}]
+result = client.create_transactions(add=add)
+```
+## delete customers
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| delete_ids     |  list  | required |
+```python
+delete_ids = ['123', '1234', '12345']
+result = client.delete_transactions(delete_ids)
+```
+## comment transactions
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| update     |  list  | required |
+```python
+update = [{
+    "transaction_id": "5396",
+    "comment": "Составить договор"
+}]
+result = client.delete_transactions(update)
+```
+## get transactions
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset     |  int  | 0 |
+| id     |  Optional[int]  | None |
+| customer_id     |  Optional[int]  | None |
+```python
+transactions = client.get_transactions()
+```
+## update customers periods
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| update     |  list  | required |
+```python
+update = [{
+    "period": "5",
+    "id": "15563",
+    "color": "#000000",
+    "sort": "1"
+}]
+result = client.update_customer_periods(update)
+```
+## get customers periods
+* doc - https://www.amocrm.ru/developers/content/api/customers
+
+```python
+periods = client.get_customer_periods()
+```

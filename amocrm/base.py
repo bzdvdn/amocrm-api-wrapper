@@ -257,13 +257,13 @@ class BaseClient(object):
         params = {'add': add}
         return self._send_api_request('post', url, params)
 
-    def delete_transactions(self, delete: list) -> dict:
+    def delete_transactions(self, delete_ids: list) -> dict:
         """
         :param delete: list (list of transactions)
         :return: dict
         """
         url = f'{self.crm_url}/api/v2/transactions'
-        params = {'delete': delete}
+        params = {'delete': delete_ids}
         return self._send_api_request('post', url, params)
 
     def update_transaction_comments(self, update: list) -> dict:
