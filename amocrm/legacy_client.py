@@ -7,7 +7,7 @@ from .errors import AmoException
 from .base import BaseClient
 
 
-class Amocrm(BaseClient):
+class AmocrmLegacyClient(BaseClient):
     def __init__(self, login: str, token: str, crm_url: str) -> None:
         """
         :param login: str (Login from amocrm)
