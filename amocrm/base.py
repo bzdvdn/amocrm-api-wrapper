@@ -517,8 +517,35 @@ class BaseClient(object):
     def delete_pipelines(self, id: Union[list, int]) -> dict:
         """
         :param id: list (list of pipelines, ot)
-        :return:
+        :return: dict
         """
         url = f'{self.crm_url}/private/api/v2/json/pipelines/set'
         params = {'request': {'id': id}}
         return self._send_api_request('post', url, params)
+
+    def get_users(
+        self,
+        page: int = 1,
+        limit_rows: int = 250,
+        with_role: bool = False,
+        with_group: bool = False,
+    ) -> dict:
+        """
+        :param page: int (number of page) 
+        :param limit_rows: int (limit)
+        :param with_role: bool
+        :param with_group: bool
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/users'
+        params = {'page': page, 'limit_rows': limit_rows}
+        with_ = []
+        if with_group:
+            with_.append('group')
+        if with_role:
+            with_.append('role')
+        url += '?' + urlencode(params)
+        if with_:
+            with_str = ','.join(i for i in with_)
+            url = f'{url}&with={with_str}'
+        return self._send_api_request('get', url)
