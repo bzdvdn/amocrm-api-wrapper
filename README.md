@@ -362,17 +362,6 @@ add = [{
 }]
 result = client.create_transactions(add=add)
 ```
-## delete customers
-* doc - https://www.amocrm.ru/developers/content/api/customers
-* params:  
-
-| name       | type                | default value |
-| :------------------:|:------------------:| :------------------:|
-| delete_ids     |  list  | required |
-```python
-delete_ids = ['123', '1234', '12345']
-result = client.delete_transactions(delete_ids)
-```
 ## comment transactions
 * doc - https://www.amocrm.ru/developers/content/api/customers
 * params:  
@@ -421,4 +410,86 @@ result = client.update_customer_periods(update)
 
 ```python
 periods = client.get_customer_periods()
+```
+
+## get tasks
+----------------------------------------------
+* doc -  https://www.amocrm.ru/developers/content/api/tasks
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| element_id    | Optional[str]  |  None |
+| type    | Optional[str]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
+
+```python
+tasks = client.get_tasks(limit_rows=20, limit_offset=50)
+```
+## create tasks
+* doc - https://www.amocrm.ru/developers/content/api/tasks
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  Optional[list]  | None |
+| update     |  Optional[list]  | None |
+```python
+add = [{
+    "element_id": "496537",
+    "element_type": "1",
+    "complete_till_at": "1508706000",
+    "task_type": "1",
+    "text": "Не забыть перезвонить",
+    "created_at": "1508706000",
+    "updated_at": "1508706000",
+    "responsible_user_id": "504141",
+    "created_by": "504141"
+}]
+result = client.create_tasks(add=add)
+```
+## get notes
+----------------------------------------------
+* doc -  https://www.amocrm.ru/developers/content/api/notes
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| element_id    | Optional[str]  |  None |
+| note_type    | Optional[str]  |  None |
+| if_modified_since | Optional[str]  |  None |
+
+```python
+notes = client.get_notes(limit_rows=20, limit_offset=50)
+```
+## create or update notes
+* doc - https://www.amocrm.ru/developers/content/api/notes
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  Optional[list]  | None |
+| update     |  Optional[list]  | None |
+```python
+add = [{
+    "element_id": "1099238",
+    "element_type": "1",
+    "text": "Примечание",
+    "note_type": "4",
+    "created_at": "1509570000",
+    "responsible_user_id": "504141",
+    "created_by": "504141"
+}]
+update = [{
+    "id": "3323256",
+    "updated_at": "1509656400",
+    "text": "Изменение примечания"
+}]
+result = client.create_or_update_notes(add=add, update=update)
 ```
