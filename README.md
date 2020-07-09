@@ -42,7 +42,6 @@ client.update_session_params(headers)
 accounts = client.get_account_info(with_custom_fields=True)
 ```
 ## create or update leads
-=======
 ----------------------------------------------
 * doc - https://www.amocrm.ru/developers/content/api/leads
 * params:  
@@ -77,7 +76,6 @@ update = [{
 result = client.create_or_update_leads(add=add, update=update)
 ```
 ## get leads
-=======
 ----------------------------------------------
 * doc - https://www.amocrm.ru/developers/content/api/leads
 * params:  
@@ -89,10 +87,185 @@ result = client.create_or_update_leads(add=add, update=update)
 | id    | Union[list, int, None]  |  None |
 | query    | Optional[str]  |  None |
 | status    | Optional[str]  |  None |
-| responsible_user_id    | Union[list, int, None]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
 | with_params    | Optional[list]  |  None |
 
 
 ```python
 leads = client.get_leads(limit_rows=20, limit_offset=50)
+```
+
+## create or update contacts
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/contacts
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  list  | None |
+| update    | list |  None |
+```python
+add = [{
+    	"name": "Александр Крылов",
+		"responsible_user_id": "504141",
+		"created_by": "504141",
+		"created_at": "1509051600",
+		"tags": "важный,доставка",
+		"leads_id": [
+			"45615",
+			"43510"
+		],
+		"company_id": "30615",}]
+update = [{
+    "id": "41560",
+    "updated_at": "1508965200",
+    "custom_fields": [{
+        "id": "4396819",
+        "values": [{
+            "value": "example@example.moc",
+            "enum": "WORK"
+        }]
+    }]
+}]
+result = client.create_or_update_contacts(add=add, update=update)
+```
+## get contacts
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/contacts
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| query    | Optional[str]  |  None |
+| status    | Optional[str]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
+| with_params    | Optional[list]  |  None |
+
+```python
+contacts = client.get_contacts(limit_rows=20, limit_offset=50)
+```
+
+## create or update companies
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/companies
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  list  | None |
+| update    | list |  None |
+```python
+add = [{
+    "name": "ООО Компания",
+    "responsible_user_id": "504141",
+    "created_by": "504141",
+    "created_at": "1509051600",
+    "tags": "недвижимость,застройка,аренда",
+    "leads_id": [
+        "45615",
+        "43510"
+    ],}]
+update = [{
+    "id": "41389",
+    "updated_at": "1508965200",
+    "custom_fields": [{
+        "id": "315289",
+        "values": [{
+            "value": "example.moc",
+            "enum": "WEB"
+        }]
+    }]
+}]
+result = client.create_or_update_companies(add=add, update=update)
+```
+## get companies
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/companies
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| query    | Optional[str]  |  None |
+| status    | Optional[str]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
+| with_params    | Optional[list]  |  None |
+
+```python
+companies = client.get_companies(limit_rows=20, limit_offset=50)
+```
+
+## create or update customers
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  list  | None |
+| update    | list |  None |
+```python
+add = [{
+    "name": "ООО СпецГорСтрой",
+    "next_date": "1508878800",
+    "created_at": "1508533200",
+    "responsible_user_id": "504141",
+    "created_by": "504141",
+    "next_price": "5000",
+    "periodicity": "7",
+    "tags": "продажи, маркеры",
+    "period_id": "15489654",
+    "contacts_id": [
+        "496531"
+    ],
+    "company_id": "475621"}]
+update = [{
+    "id": "466791",
+    "updated_at": "1508619600",
+    "next_date": "1508878800",
+    "next_price": "1508706000",
+    "custom_fields": [{
+        "id": "4400021",
+        "values": [
+            "3692471",
+            "3692472",
+            "3692473"
+        ]
+    }]
+}]
+result = client.create_or_update_companies(add=add, update=update)
+```
+## get customers
+----------------------------------------------
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit_rows     |  int  | 500 |
+| limit_offset    | int |  0 |
+| id    | Union[list, int, None]  |  None |
+| query    | Optional[str]  |  None |
+| status    | Optional[str]  |  None |
+| responsible_user_id | Union[list, int, None]  |  None |
+| with_params    | Optional[list]  |  None |
+
+```python
+customers = client.get_customers(limit_rows=20, limit_offset=50)
+```
+## delete customers
+* doc - https://www.amocrm.ru/developers/content/api/customers
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| delete_ids     |  list  | required |
+```python
+delete_ids = ['123', '1234', '12345']
+result = client.delete_customers(delete_ids)
 ```

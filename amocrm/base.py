@@ -225,14 +225,14 @@ class BaseClient(object):
         """
         return self._create_or_update('customers', add, update)
 
-    def delete_customers(self, delete: list) -> dict:
+    def delete_customers(self, delete_ids: list) -> dict:
         """
         doc - https://www.amocrm.ru/developers/content/api/companies
         :param delete: list (list of customer ids)
         :return: dict
         """
         url = f'{self.crm_url}/api/v2/customers'
-        params = {'delete': delete}
+        params = {'delete': delete_ids}
         return self._send_api_request('post', url, data=params)
 
     def get_customers(
