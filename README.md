@@ -493,3 +493,78 @@ update = [{
 }]
 result = client.create_or_update_notes(add=add, update=update)
 ```
+## create incoming leads by sip
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  Optional[list]  | None |
+```python
+add = [{
+    "<data>"
+}]
+result = client.create_sip_incoming_leads(add=add)
+```
+
+## create incoming leads by form
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| add     |  Optional[list]  | None |
+```python
+add = [{
+    "<data>"
+}]
+result = client.create_form_incoming_leads(add=add)
+```
+## accept incoming leads
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| accept     |  list  | required |
+| user_id     |  int  | required |
+| status_id     |  int  | required |
+```python
+result = client.accept_incoming_leads(accept=['123', '1234', '444'], user_id=1, status_id=2310)
+```
+## decline incoming leads
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| decline     |  list  | required |
+| user_id     |  int  | required |
+```python
+result = client.accept_incoming_leads(decline=['123', '1234', '444'], user_id=1)
+```
+## get incomings leads
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| page     |  int  | 1 |
+| page_size     |  int  | 500 |
+| categories     |  Optional[list]  | None |
+| pipeline_id     |  Optional[list]  | None |
+| order_by     |  str  | 'asc' |
+```python
+result = client.get_incoming_leads()
+```
+## get incomings leads summary
+* doc - https://www.amocrm.ru/developers/content/api/unsorted
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| date_from     |  str  | required |
+| date_to     |  str  | required |
+```python
+result = client.get_incoming_leads_summary(date_from, date_to)
+```
