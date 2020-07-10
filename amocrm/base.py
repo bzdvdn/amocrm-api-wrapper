@@ -531,6 +531,7 @@ class BaseClient(object):
         with_group: bool = False,
     ) -> dict:
         """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/users-api#users-list
         :param page: int (number of page) 
         :param limit_rows: int (limit)
         :param with_role: bool
@@ -549,3 +550,88 @@ class BaseClient(object):
             with_str = ','.join(i for i in with_)
             url = f'{url}&with={with_str}'
         return self._send_api_request('get', url)
+
+    def get_user(
+        self, user_id: int, with_role: bool = False, with_group: bool = False,
+    ) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+        :param user_id: int  
+        :param with_role: bool
+        :param with_group: bool
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/users/{user_id}'
+        with_ = []
+        if with_group:
+            with_.append('group')
+        if with_role:
+            with_.append('role')
+        if with_:
+            with_str = ','.join(i for i in with_)
+            url = f'{url}?with={with_str}'
+        return self._send_api_request('get', url)
+
+    def get_webhooks(self) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+        """
+        url = f'{self.crm_url}/api/v4/webhooks'
+        return self._send_api_request('get', url)
+
+    def subscribe_webhook(self, destination: str, settings: list) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+        :param destination: str (webhook url)  
+        :param settings: list (list of events)
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/webhooks'
+        params = {'destination': destination, 'settings': settings}
+        return self._send_api_request('post', url)
+
+    def unsubscribe_webhook(self):
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-delete
+        """
+        url = f'{self.crm_url}/api/v4/webhooks'
+        return self._send_api_request('delete', url)
+
+    def get_widgets(self, page: int = 1, limit_rows: int = 250) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
+        :param page: int (page)  
+        :param limit_rows: int 
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/widgets'
+        params = {'page': page, 'limit': limit_rows}
+        url = f'{url}?{urlencode(params)}'
+        return self._send_api_request('get', url)
+
+    def get_widget(self, widget_code: str) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-detail
+        :param widget_code: str
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
+        return self._send_api_request('get', url)
+
+    def install_widget(self, widget_code: str, **kwargs) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
+        :param widget_code: str (page)
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
+        return self._send_api_request('post', url, kwargs)
+
+    def uninstall_widget(self, widget_code: str) -> dict:
+        """
+        doc - https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-uninstall
+        :param widget_code: str (page)
+        :return: dict
+        """
+        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
+        return self._send_api_request('delete', url)
