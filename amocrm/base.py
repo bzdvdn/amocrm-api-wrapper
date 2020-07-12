@@ -494,6 +494,28 @@ class BaseClient(object):
         params = {'delete': delete}
         return self._send_api_request('post', url, params)
 
+    def _get_custom_fields(self, entity: str) -> dict:
+        url = f'{self.crm_url}/api/v4/{entity}/custom_fields'
+        return self._send_api_request('get', url)
+
+    def get_contacts_custom_fields(self) -> dict:
+        return self._get_custom_fields('contacts')
+
+    def get_leads_custom_fields(self) -> dict:
+        return self._get_custom_fields('leads')
+
+    def get_companies_custom_fields(self) -> dict:
+        return self._get_custom_fields('companies')
+
+    def get_customers_custom_fields(self) -> dict:
+        return self._get_custom_fields('customers')
+
+    def get_customer_segments_custom_fields(self) -> dict:
+        return self._get_custom_fields('customers/segments')
+
+    def get_catalog_custom_fields(self, catalog_id: str) -> dict:
+        return self._get_custom_fields(f'catalogs/{catalog_id}')
+
     def create_pipelines(self, add: list) -> dict:
         """
         doc - https://www.amocrm.ru/developers/content/api/pipelines
