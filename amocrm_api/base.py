@@ -86,7 +86,35 @@ class BaseClient(object):
             objects (list): list of leads
 
         Returns:
-            dict: query result
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads"
+                    }
+                },
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 10185151,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/10185151"
+                                }
+                            }
+                        },
+                        {
+                            "id": 10185153,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/10185153"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         return self._create_or_update_entities('leads', objects)
 
@@ -96,7 +124,37 @@ class BaseClient(object):
         Args:
             objects (list): list of leads
         Returns:
-            dict: query result
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads"
+                    }
+                },
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 54886,
+                            "updated_at": 1589556420,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/54886"
+                                }
+                            }
+                        },
+                        {
+                            "id": 54884,
+                            "updated_at": 1589556420,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/54884"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         return self._create_or_update_entities('leads', objects, True)
 
@@ -107,7 +165,85 @@ class BaseClient(object):
             lead_id (int): id of lead
 
         Returns:
-            dict: lead obj
+            dict: {
+                "id": 3912171,
+                "name": "Example",
+                "price": 12,
+                "responsible_user_id": 504141,
+                "group_id": 0,
+                "status_id": 143,
+                "pipeline_id": 3104455,
+                "loss_reason_id": 4203748,
+                "source_id": null,
+                "created_by": 504141,
+                "updated_by": 504141,
+                "created_at": 1585299171,
+                "updated_at": 1590683337,
+                "closed_at": 1590683337,
+                "closest_task_at": null,
+                "is_deleted": false,
+                "custom_fields_values": null,
+                "score": null,
+                "account_id": 28805383,
+                "is_price_modified_by_robot": false,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/3912171"
+                    }
+                },
+                "_embedded": {
+                    "tags": [
+                        {
+                            "id": 100667,
+                            "name": "тест"
+                        }
+                    ],
+                    "catalog_elements": [
+                        {
+                            "id": 525439,
+                            "metadata": {
+                                "quantity": 1,
+                                "catalog_id": 4521
+                            }
+                        }
+                    ],
+                    "loss_reason": [
+                        {
+                            "id": 4203748,
+                            "name": "Пропала потребность",
+                            "sort": 100000,
+                            "created_at": 1582117280,
+                            "updated_at": 1582117280,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/loss_reasons/4203748"
+                                }
+                            }
+                        }
+                    ],
+                    "companies": [
+                        {
+                            "id": 10971463,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/companies/10971463"
+                                }
+                            }
+                        }
+                    ],
+                    "contacts": [
+                        {
+                            "id": 10971465,
+                            "is_main": true,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/contacts/10971465"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/leads/{lead_id}'
         return self._send_api_request('get', url)
@@ -115,28 +251,108 @@ class BaseClient(object):
     def get_leads(
         self,
         limit: int = 250,
-        query: Optional[str] = None,
         page: int = 1,
         with_params: Optional[list] = None,
-    ) -> dict:  #
-        # TODO: filter data
+        filters: Optional[dict] = None,
+    ) -> dict:
         """return leads
 
         Args:
             limit (int, optional): limit of rows. Defaults to 250.
-            query (Optional[str], optional): str query. Defaults to None.
             page (int, optional): number of page. Defaults to 1.
             with_params (Optional[list], optional): params. Defaults to None.
+            filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
 
         Returns:
-            dict: 
+            dict: {
+            "_page": 2,
+            "_links": {
+                "self": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=2"
+                },
+                "next": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=3"
+                },
+                "first": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=1"
+                },
+                "prev": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=1"
+                }
+            },
+            "_embedded": {
+                "leads": [
+                    {
+                        "id": 19619,
+                        "name": "Сделка для примера",
+                        "price": 46333,
+                        "responsible_user_id": 123321,
+                        "group_id": 625,
+                        "status_id": 142,
+                        "pipeline_id": 1300,
+                        "loss_reason_id": null,
+                        "source_id": null,
+                        "created_by": 321123,
+                        "updated_by": 321123,
+                        "created_at": 1453279607,
+                        "updated_at": 1502193501,
+                        "closed_at": 1483005931,
+                        "closest_task_at": null,
+                        "is_deleted": false,
+                        "custom_fields_values": null,
+                        "score": null,
+                        "account_id": 5135160,
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/19619"
+                            }
+                        },
+                        "_embedded": {
+                            "tags": [],
+                            "companies": []
+                        }
+                    },
+                    {
+                        "id": 14460,
+                        "name": "Сделка для примера 2",
+                        "price": 655,
+                        "responsible_user_id": 123321,
+                        "group_id": 625,
+                        "status_id": 142,
+                        "pipeline_id": 1300,
+                        "loss_reason_id": null,
+                        "source_id": null,
+                        "created_by": 321123,
+                        "updated_by": 321123,
+                        "created_at": 1453279607,
+                        "updated_at": 1502193501,
+                        "closed_at": 1483005931,
+                        "closest_task_at": null,
+                        "is_deleted": false,
+                        "custom_fields_values": null,
+                        "score": null,
+                        "account_id": 1351360,
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/14460"
+                            }
+                        },
+                        "_embedded": {
+                            "tags": [],
+                            "companies": []
+                        }
+                    }
+                ]
+            }
+        }
         """
         url = f'{self.crm_url}/api/v4/leads'
         params = {'limit': limit, 'page': page}
-        if query is not None:
-            params['query'] = query
         if with_params:
             params['with'] = ','.join(param for param in with_params)
+        if filters:
+            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
+            params.update(filter_query)
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
@@ -150,7 +366,7 @@ class BaseClient(object):
         order_by: Optional[dict] = None,
     ) -> dict:
         """get unsorted leads
-
+        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-list
         Args:
             page (int, optional): number of page. Defaults to 1.
             limit (int, optional): limit rows. Defaults to 250.
@@ -160,7 +376,63 @@ class BaseClient(object):
             order_by (Optional[dict], optional): orber by params like {'created_at': 'asc'}. Defaults to None.
 
         Returns:
-            dict: query result
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/unsorted?filter[uid]=98fb033cefde74f5de1a5d3980a2a2d108037"
+                    }
+                },
+                "_embedded": {
+                    "unsorted": [
+                        {
+                            "uid": "98fb033cefde74f5de1a5d3980a2a2d108037",
+                            "source_uid": null,
+                            "source_name": "UIS",
+                            "category": "sip",
+                            "pipeline_id": 2194576,
+                            "created_at": 1583156937,
+                            "metadata": {
+                                "from": "7999999999",
+                                "phone": 7999999999,
+                                "called_at": 1583156916,
+                                "duration": "0",
+                                "link": null,
+                                "service_code": "uis_widget"
+                            },
+                            "account_id": 123312,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/unsorted/98fb033cefde74f5de1a5d3980a2a2d108037"
+                                }
+                            },
+                            "_embedded": {
+                                "contacts": [
+                                    {
+                                        "id": 13176707,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/contacts/13176707"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "leads": [
+                                    {
+                                        "id": 7002787,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/7002787"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "companies": []
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/unsorted'
         params = {'limit': limit, 'page': page}
@@ -176,6 +448,59 @@ class BaseClient(object):
         return self._send_api_request('get', url)
 
     def get_unsorted_by_uid(self, uid: str) -> dict:
+        """Get unsorted obj by uid
+        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-detail
+        Args:
+            uid (str): uid
+
+        Returns:
+            dict: {
+                "uid": "aa401affb0094076b7449008363c1dc77d6790ad13fb5b08176dc46daa18",
+                "source_uid": "my_unique_uid",
+                "source_name": "Название источника",
+                "category": "forms",
+                "pipeline_id": 3166396,
+                "created_at": 1588840852,
+                "metadata": {
+                    "form_id": "my_best_form",
+                    "form_name": "Обратная связь",
+                    "form_page": "https://example.com/form",
+                    "ip": "192.168.0.1",
+                    "form_sent_at": "1570178452",
+                    "referer": "https://google.com/search",
+                    "visitor_uid": null
+                },
+                "account_id": 28805383,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/unsorted/aa401affb0094076b7449008363c1dc77d6790ad13fb5b08176dc46daa18"
+                    }
+                },
+                "_embedded": {
+                    "contacts": [
+                        {
+                            "id": 9567221,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/contacts/9567221"
+                                }
+                            }
+                        }
+                    ],
+                    "leads": [
+                        {
+                            "id": 6414851,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/6414851"
+                                }
+                            }
+                        }
+                    ],
+                    "companies": []
+                }
+            }
+        """
         url = f'{self.crm_url}/api/v4/unsorted/{uid}'
         return self._send_api_request('get', url)
 
@@ -207,7 +532,46 @@ class BaseClient(object):
             request_id (Optional[str], optional): str. Defaults to None.
 
         Returns:
-            dict: query result
+            dict: {
+            "_total_items": 1,
+            "_embedded": {
+                "unsorted": [
+                    {
+                        "uid": "aa401affb0094076b74442bc3f401d53e103f264d6668fd3ecfd5acef42f",
+                        "account_id": 28805383,
+                        "request_id": "123",
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/unsorted/aa401affb0094076b74442bc3f401d53e103f264d6668fd3ecfd5acef42f"
+                            }
+                        },
+                        "_embedded": {
+                            "contacts": [
+                                {
+                                    "id": 11075541,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/contacts/11075541"
+                                        }
+                                    }
+                                }
+                            ],
+                            "leads": [
+                                {
+                                    "id": 7706509,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/7706509"
+                                        }
+                                    }
+                                }
+                            ],
+                            "companies": []
+                        }
+                    }
+                ]
+            }
+        }
         """
         url = f'{self.crm}/api/v4/leads/unsorted/{entity}'
         params = {
@@ -224,7 +588,7 @@ class BaseClient(object):
             params['pipeline_id'] = pipeline_id
         if created_at:
             params['created_at'] = created_at
-        return self._send_api_request('post', url, params)
+        return self._send_api_request('post', url, [params])
 
     def create_unsorted_by_sip(
         self,
@@ -271,7 +635,35 @@ class BaseClient(object):
             status_id (int): status id
 
         Returns:
-            dict: query resutl
+            dict: {
+                "uid": "3cvd1de2ebfsd152fd6a465cd3e586cbdba6827",
+                "pipeline_id": 31634,
+                "category": "mail",
+                "created_at": 1589165593,
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 9944789,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/9944789"
+                                }
+                            }
+                        }
+                    ],
+                    "contacts": [
+                        {
+                            "id": 16522451,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/contacts/16522451"
+                                }
+                            }
+                        }
+                    ],
+                    "companies": []
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}/accept'
         params = {'user_id': user_id, 'status_id': status_id}
@@ -285,7 +677,34 @@ class BaseClient(object):
             user_id (int): user id
 
         Returns:
-            dict: query result
+            dict: {
+                "uid": "98bc1d1de2f960a2ad0e34b52823",
+                "pipeline_id": 1394576,
+                "category": "mail",
+                "created_at": 1589115506,
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 9937533,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/9937533"
+                                }
+                            }
+                        }
+                    ],
+                    "contacts": [
+                        {
+                            "id": 163141,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/contacts/163141"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}/decline'
         params = {'user_id': user_id}
@@ -300,7 +719,21 @@ class BaseClient(object):
             link (dict): link object like {'entity_id': 123, 'entity_type': 'leads'}
 
         Returns:
-            dict: [description]
+            dict: {
+                "uid": "d7faa21ce091fe0da05d8d4c2075090c1e9bfd4",
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 93144801,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/93144801"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}api/v4/leads/unsorted/{uid}/link'
         params = {'user_id': user_id, 'link': link}
@@ -322,7 +755,26 @@ class BaseClient(object):
             pipeline_id (Union[str, list, None], optional): int. Defaults to None.
 
         Returns:
-            dict: query result
+            dict: {
+                "total": 168,
+                "accepted": 6,
+                "declined": 2,
+                "average_sort_time": 34521,
+                "categories": {
+                    "sip": {
+                        "total": 31
+                    },
+                    "mail": {
+                        "total": 41
+                    },
+                    "forms": {
+                        "total": 27
+                    },
+                    "chats": {
+                        "total": 69
+                    }
+                }
+            }
         """
         params = {}
         if uid:
@@ -340,7 +792,111 @@ class BaseClient(object):
         """get leads pipelines
 
         Returns:
-            dict: query result
+            dict: {
+                "_total_items": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/pipelines"
+                    }
+                },
+                "_embedded": {
+                    "pipelines": [
+                        {
+                            "id": 3177727,
+                            "name": "Воронка",
+                            "sort": 1,
+                            "is_main": true,
+                            "is_unsorted_on": true,
+                            "is_archive": false,
+                            "account_id": 12345678,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727"
+                                }
+                            },
+                            "_embedded": {
+                                "statuses": [
+                                    {
+                                        "id": 32392156,
+                                        "name": "Неразобранное",
+                                        "sort": 10,
+                                        "is_editable": false,
+                                        "pipeline_id": 3177727,
+                                        "color": "#c1c1c1",
+                                        "type": 1,
+                                        "account_id": 12345678,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392156"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 32392159,
+                                        "name": "Первичный контакт",
+                                        "sort": 20,
+                                        "is_editable": true,
+                                        "pipeline_id": 3177727,
+                                        "color": "#99ccff",
+                                        "type": 0,
+                                        "account_id": 12345678,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392159"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 32392165,
+                                        "name": "Принимают решение",
+                                        "sort": 30,
+                                        "is_editable": true,
+                                        "pipeline_id": 3177727,
+                                        "color": "#ffcc66",
+                                        "type": 0,
+                                        "account_id": 12345678,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392165"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 142,
+                                        "name": "Успешно реализовано",
+                                        "sort": 10000,
+                                        "is_editable": false,
+                                        "pipeline_id": 3177727,
+                                        "color": "#CCFF66",
+                                        "type": 0,
+                                        "account_id": 12345678,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/142"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 143,
+                                        "name": "Закрыто и не реализовано",
+                                        "sort": 11000,
+                                        "is_editable": false,
+                                        "pipeline_id": 3177727,
+                                        "color": "#D5D8DB",
+                                        "type": 0,
+                                        "account_id": 12345678,
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/143"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/leads/pipelines'
         return self._send_api_request('get', url)
@@ -349,7 +905,99 @@ class BaseClient(object):
         """get leads pipeline
 
         Returns:
-            dict: query result
+            dict: {
+                "id": 3177727,
+                "name": "Воронка",
+                "sort": 1,
+                "is_main": true,
+                "is_unsorted_on": true,
+                "is_archive": false,
+                "account_id": 28847170,
+                "_links": {
+                    "self": {
+                        "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727"
+                    }
+                },
+                "_embedded": {
+                    "statuses": [
+                        {
+                            "id": 32392156,
+                            "name": "Неразобранное",
+                            "sort": 10,
+                            "is_editable": false,
+                            "pipeline_id": 3177727,
+                            "color": "#c1c1c1",
+                            "type": 1,
+                            "account_id": 28847170,
+                            "_links": {
+                                "self": {
+                                    "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392156"
+                                }
+                            }
+                        },
+                        {
+                            "id": 32392159,
+                            "name": "Первичный контакт",
+                            "sort": 20,
+                            "is_editable": true,
+                            "pipeline_id": 3177727,
+                            "color": "#99ccff",
+                            "type": 0,
+                            "account_id": 28847170,
+                            "_links": {
+                                "self": {
+                                    "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392159"
+                                }
+                            }
+                        },
+                        {
+                            "id": 32392165,
+                            "name": "Принимают решение",
+                            "sort": 30,
+                            "is_editable": true,
+                            "pipeline_id": 3177727,
+                            "color": "#ffcc66",
+                            "type": 0,
+                            "account_id": 28847170,
+                            "_links": {
+                                "self": {
+                                    "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392165"
+                                }
+                            }
+                        },
+                        {
+                            "id": 142,
+                            "name": "Успешно реализовано",
+                            "sort": 10000,
+                            "is_editable": false,
+                            "pipeline_id": 3177727,
+                            "color": "#CCFF66",
+                            "type": 0,
+                            "account_id": 28847170,
+                            "_links": {
+                                "self": {
+                                    "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/142"
+                                }
+                            }
+                        },
+                        {
+                            "id": 143,
+                            "name": "Закрыто и не реализовано",
+                            "sort": 11000,
+                            "is_editable": false,
+                            "pipeline_id": 3177727,
+                            "color": "#D5D8DB",
+                            "type": 0,
+                            "account_id": 28847170,
+                            "_links": {
+                                "self": {
+                                    "href": "https://shard152.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/143"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}'
         return self._send_api_request('get', url)
@@ -427,6 +1075,252 @@ class BaseClient(object):
             dict: query result
         """
         url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}'
+        return self._send_api_request('delete', url)
+
+    def get_pipeline_statuses(self, pipeline_id: int) -> dict:
+        """return pipeline Statuses
+        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-list
+        Args:
+            pipeline_id (int): id of pipeline
+        Returns:
+            dict: {
+            "_total_items": 1,
+            "_links": {
+                "self": {
+                    "href": "https://example.amocrm.ru/api/v4/leads/pipelines"
+                }
+            },
+            "_embedded": {
+                "pipelines": [
+                    {
+                        "id": 3177727,
+                        "name": "Воронка",
+                        "sort": 1,
+                        "is_main": true,
+                        "is_unsorted_on": true,
+                        "is_archive": false,
+                        "account_id": 12345678,
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727"
+                            }
+                        },
+                        "_embedded": {
+                            "statuses": [
+                                {
+                                    "id": 32392156,
+                                    "name": "Неразобранное",
+                                    "sort": 10,
+                                    "is_editable": false,
+                                    "pipeline_id": 3177727,
+                                    "color": "#c1c1c1",
+                                    "type": 1,
+                                    "account_id": 12345678,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392156"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 32392159,
+                                    "name": "Первичный контакт",
+                                    "sort": 20,
+                                    "is_editable": true,
+                                    "pipeline_id": 3177727,
+                                    "color": "#99ccff",
+                                    "type": 0,
+                                    "account_id": 12345678,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392159"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 32392165,
+                                    "name": "Принимают решение",
+                                    "sort": 30,
+                                    "is_editable": true,
+                                    "pipeline_id": 3177727,
+                                    "color": "#ffcc66",
+                                    "type": 0,
+                                    "account_id": 12345678,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392165"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 142,
+                                    "name": "Успешно реализовано",
+                                    "sort": 10000,
+                                    "is_editable": false,
+                                    "pipeline_id": 3177727,
+                                    "color": "#CCFF66",
+                                    "type": 0,
+                                    "account_id": 12345678,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/142"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 143,
+                                    "name": "Закрыто и не реализовано",
+                                    "sort": 11000,
+                                    "is_editable": false,
+                                    "pipeline_id": 3177727,
+                                    "color": "#D5D8DB",
+                                    "type": 0,
+                                    "account_id": 12345678,
+                                    "_links": {
+                                        "self": {
+                                            "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/143"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+        """
+        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses'
+        return self._send_api_request('get', url)
+
+    def get_pipeline_status(self, pipeline_id: int, status_id: int) -> dict:
+        """Get status
+        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-detail
+        Args:
+            pipeline_id (int): id of pipeline
+            status_id (int): id of status
+
+        Returns:
+            dict: {
+                "id": 32392156,
+                "name": "Неразобранное",
+                "sort": 10,
+                "is_editable": false,
+                "pipeline_id": 3177727,
+                "color": "#c1c1c1",
+                "type": 1,
+                "account_id": 12345678,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392156"
+                    }
+                }
+            }
+        """
+        url = (
+            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+        )
+        return self._send_api_request('get', url)
+
+    def add_statuses_to_pipeline(self, pipeline_id: int, statuses: list) -> dict:
+        """Add status tot pipeline
+        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-add
+        Args:
+            pipeline_id (int): id of pipeline
+            statuses (list): list of status object
+
+        Returns:
+            dict: {
+                "_total_items": 2,
+                "_embedded": {
+                    "statuses": [
+                        {
+                            "id": 33035290,
+                            "name": "Новый этап",
+                            "sort": 60,
+                            "is_editable": true,
+                            "pipeline_id": 3270355,
+                            "color": "#fffeb2",
+                            "type": 0,
+                            "account_id": 1415131,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3270355/statuses/33035290"
+                                }
+                            }
+                        },
+                        {
+                            "id": 33035293,
+                            "name": "Новый этап 2",
+                            "sort": 70,
+                            "is_editable": true,
+                            "pipeline_id": 3270355,
+                            "color": "#fffeb2",
+                            "type": 0,
+                            "account_id": 1415131,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3270355/statuses/33035293"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses'
+        return self._send_api_request('post', url, statuses)
+
+    def edit_pipeline_status(
+        self, pipeline_id: int, status_id: int, name: str, sort: int, color: str
+    ) -> dict:
+        """Edit pipeline status
+        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-edit
+        Args:
+            pipeline_id (int): id of pipeline
+            status_id (int): id of status
+            name (str): status name
+            sort (int): sort of status
+            color (str): status color
+
+        Returns:
+            dict: {
+                "id": 32392165,
+                "name": "Новое название для статуса",
+                "sort": 20,
+                "is_editable": true,
+                "pipeline_id": 3177727,
+                "color": "#c1e0ff",
+                "type": 0,
+                "account_id": 12345678,
+                "request_id": "0",
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/pipelines/3177727/statuses/32392165"
+                    }
+                }
+            }
+        """
+        url = (
+            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+        )
+        params = {'name': name, 'sort': sort, 'color': color}
+        return self._send_api_request('patch', url, params)
+
+    def delete_status_from_pipeline(self, pipeline_id: int, status_id: int) -> dict:
+        """Delete status from pipeline
+        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-delete
+        Args:
+            pipeline_id (int): id of pipeline
+            status_id (int): id of status
+
+        Returns:
+            dict: {}
+        """
+        url = (
+            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+        )
         return self._send_api_request('delete', url)
 
     def _get_custom_fields(self, entity: str) -> dict:
