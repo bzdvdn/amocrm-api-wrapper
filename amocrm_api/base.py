@@ -11,9 +11,10 @@ class BaseClient(object):
         raise NotImplementedError()
 
     def update_session_params(self, params: dict) -> None:
-        """
-        :param params: dict (amo headers params)
-        :return: None
+        """update session
+
+        Args:
+            params (dict): like {'IF-MODIFIED-SINCE': <datetime>}
         """
         self.session = self._init_session(params)
 
@@ -54,6 +55,65 @@ class BaseClient(object):
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
+    def _get_entity_links(
+        self, entity: str, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/links'
+        if filters:
+            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
+            url = f'{url}?{urlencode(filter_query)}'
+        return self._send_api_request('get', url)
+
+    def _link_entities(self, entity: str, entity_id: int, objects: list) -> dict:
+        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/links'
+        return self._send_api_request('post', url, objects)
+
+    def _unlink_entities(self, entity: str, entity_id: int, objects: list) -> dict:
+        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks'
+        return self._send_api_request('post', url, objects)
+
+    def unlink_leads_entity(self, entity_id: int, objects: list) -> dict:
+        return self._unlink_entities('leads', entity_id, objects)
+
+    def unlink_contacts_entity(self, entity_id: int, objects: list) -> dict:
+        return self._unlink_entities('contacts', entity_id, objects)
+
+    def unlink_customers_entity(self, entity_id: int, objects: list) -> dict:
+        return self._unlink_entities('customers', entity_id, objects)
+
+    def unlink_companies_entity(self, entity_id: int, objects: list) -> dict:
+        return self._unlink_entities('companies', entity_id, objects)
+
+    def link_leads_entity(self, entity_id: int, objects: list) -> dict:
+        return self._link_entities('leads', entity_id, objects)
+    
+    def link_contacts_entity(self, entity_id: int, objects: list) -> dict:
+        return self._link_entities('contcats', entity_id, objects)
+
+    def link_companies_entity(self, entity_id: int, objects: list) -> dict:
+        return self._link_entities('companies', entity_id, objects)
+
+    def link_customers_entity(self, entity_id: int, objects: list) -> dict:
+        return self._link_entities('customers', entity_id, objects)
+
+    def get_leads_links(self, entity_id: int, filters: Optional[dict] = None) -> dict:
+        return self._get_entity_links('leads', entity_id, filters)
+
+    def get_contacts_links(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        return self._get_entity_links('contacts', entity_id, filters)
+
+    def get_companies_links(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        return self._get_entity_links('companies', entity_id, filters)
+
+    def get_customers_links(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        return self._get_entity_links('customers', entity_id, filters)
+
     def get_account_info(
         self,
         with_amojo_id: bool = False,
@@ -67,13 +127,13 @@ class BaseClient(object):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/account-info    
         Args:
-            with_amojo_id (bool, optional): [description]. Defaults to False.
-            with_amojo_rights (bool, optional): [description]. Defaults to False.
-            with_users_groups (bool, optional): [description]. Defaults to False.
-            with_task_types (bool, optional): [description]. Defaults to False.
-            with_version (bool, optional): [description]. Defaults to False.
-            with_ventity_names (bool, optional): [description]. Defaults to False.
-            with_datetime_settings (bool, optional): [description]. Defaults to False.
+            with_amojo_id (bool, optional): . Defaults to False.
+            with_amojo_rights (bool, optional): . Defaults to False.
+            with_users_groups (bool, optional): . Defaults to False.
+            with_task_types (bool, optional):. Defaults to False.
+            with_version (bool, optional): . Defaults to False.
+            with_ventity_names (bool, optional):. Defaults to False.
+            with_datetime_settings (bool, optional):. Defaults to False.
 
         Returns:
             dict: query result
