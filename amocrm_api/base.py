@@ -32,6 +32,28 @@ class BaseClient(object):
         except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
             raise AmoException({'error': str(e)})
 
+    def _get_entities(
+        self,
+        entity: str,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        url = f'{self.crm_url}/api/v4/{entity}'
+        params = {'limit': limit, 'page': page}
+        if with_params:
+            params['with'] = ','.join(param for param in with_params)
+        if filters:
+            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
+            params.update(filter_query)
+        if order:
+            order_query = {f'order[k]': v for k, v in order.items()}
+            params.update(order_query)
+        url = f'{url}?{urlencode(params)}'
+        return self._send_api_request('get', url)
+
     def get_account_info(
         self,
         with_amojo_id: bool = False,
@@ -43,7 +65,7 @@ class BaseClient(object):
         with_datetime_settings: bool = False,
     ) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/account-info    
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/account-info    
         Args:
             with_amojo_id (bool, optional): [description]. Defaults to False.
             with_amojo_rights (bool, optional): [description]. Defaults to False.
@@ -81,7 +103,7 @@ class BaseClient(object):
 
     def create_leads(self, objects: list) -> dict:
         """create leads
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-add
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-add
         Args:
             objects (list): list of leads
 
@@ -120,7 +142,7 @@ class BaseClient(object):
 
     def update_leads(self, objects: list) -> dict:
         """update leads
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
         Args:
             objects (list): list of leads
         Returns:
@@ -160,7 +182,7 @@ class BaseClient(object):
 
     def get_lead(self, lead_id: int) -> dict:
         """return lead
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#lead-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#lead-detail
         Args:
             lead_id (int): id of lead
 
@@ -254,6 +276,7 @@ class BaseClient(object):
         page: int = 1,
         with_params: Optional[list] = None,
         filters: Optional[dict] = None,
+        order: Optional[dict] = None,
     ) -> dict:
         """Get leads
 
@@ -262,6 +285,7 @@ class BaseClient(object):
             page (int, optional): number of page. Defaults to 1.
             with_params (Optional[list], optional): params. Defaults to None.
             filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
+            order (Optional[dict], optional): order params like {'update_at': 'asc'}. Defaults to None.
 
         Returns:
             dict: {
@@ -346,15 +370,8 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/api/v4/leads'
-        params = {'limit': limit, 'page': page}
-        if with_params:
-            params['with'] = ','.join(param for param in with_params)
-        if filters:
-            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
-            params.update(filter_query)
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        params = {k: v for k, v in locals().items() if k != 'self'}
+        return self._get_entities('leads', **params)
 
     def get_unsorted_leads(
         self,
@@ -366,7 +383,7 @@ class BaseClient(object):
         order_by: Optional[dict] = None,
     ) -> dict:
         """get unsorted leads
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-list
         Args:
             page (int, optional): number of page. Defaults to 1.
             limit (int, optional): limit rows. Defaults to 250.
@@ -449,7 +466,7 @@ class BaseClient(object):
 
     def get_unsorted_by_uid(self, uid: str) -> dict:
         """Get unsorted obj by uid
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-detail
         Args:
             uid (str): uid
 
@@ -603,7 +620,7 @@ class BaseClient(object):
         request_id: Optional[str] = None,
     ) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-sip
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-sip
         """
         params = {k: v for k, v in locals() if k != 'self'}
         return self._create_unsorted(entity='sip', **params)
@@ -621,14 +638,14 @@ class BaseClient(object):
         request_id: Optional[str] = None,
     ) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
         """
         params = {k: v for k, v in locals().items() if k != 'self'}
         return self._create_unsorted(entity='form', **params)
 
     def accept_unsorted(self, uid: str, user_id: int, status_id: int) -> dict:
         """Accept unsorted
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-accept
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-accept
         Args:
             uid (str): unsorted obejct uid
             user_id (int): user id
@@ -671,7 +688,7 @@ class BaseClient(object):
 
     def decline_unsorted(self, uid: str, user_id: int) -> dict:
         """Decline unsorted
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-decline
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-decline
         Args:
             uid (str): unsorted object uid
             user_id (int): user id
@@ -712,7 +729,7 @@ class BaseClient(object):
 
     def link_unsorted(self, uid: str, user_id: int, link: dict) -> dict:
         """Link unsorted to another entity
-        doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-link
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-link
         Args:
             uid (str): unsorted object uid
             user_id (int): user id
@@ -1012,7 +1029,7 @@ class BaseClient(object):
         request_id: Optional[str] = None,
     ) -> dict:
         """craete pipeline
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipelines-add
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipelines-add
         Args:
             name (str): name of pipeline
             sort (int): sort of pipeline
@@ -1045,7 +1062,7 @@ class BaseClient(object):
         is_unsorted_on: bool,
     ) -> dict:
         """Edit pipeline
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipeline-edit
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipeline-edit
         Args:
             pipeline_id (int): id of pipeline
             name (str): name of pipeline
@@ -1067,7 +1084,7 @@ class BaseClient(object):
 
     def delete_pipeline(self, pipeline_id: int) -> dict:
         """Delete pipeline
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipeline-delete
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipeline-delete
         Args:
             pipeline_id (int): id of pipeline
 
@@ -1079,7 +1096,7 @@ class BaseClient(object):
 
     def get_pipeline_statuses(self, pipeline_id: int) -> dict:
         """return pipeline Statuses
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-list
         Args:
             pipeline_id (int): id of pipeline
         Returns:
@@ -1194,7 +1211,7 @@ class BaseClient(object):
 
     def get_pipeline_status(self, pipeline_id: int, status_id: int) -> dict:
         """Get status
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-detail
         Args:
             pipeline_id (int): id of pipeline
             status_id (int): id of status
@@ -1223,7 +1240,7 @@ class BaseClient(object):
 
     def add_statuses_to_pipeline(self, pipeline_id: int, statuses: list) -> dict:
         """Add status tot pipeline
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-add
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-add
         Args:
             pipeline_id (int): id of pipeline
             statuses (list): list of status object
@@ -1276,7 +1293,7 @@ class BaseClient(object):
         self, pipeline_id: int, status_id: int, name: str, sort: int, color: str
     ) -> dict:
         """Edit pipeline status
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-edit
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-edit
         Args:
             pipeline_id (int): id of pipeline
             status_id (int): id of status
@@ -1310,7 +1327,7 @@ class BaseClient(object):
 
     def delete_status_from_pipeline(self, pipeline_id: int, status_id: int) -> dict:
         """Delete status from pipeline
-        doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-delete
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-delete
         Args:
             pipeline_id (int): id of pipeline
             status_id (int): id of status
@@ -1331,8 +1348,8 @@ class BaseClient(object):
         filters: Optional[dict] = None,
         order: Optional[dict] = None,
     ) -> dict:
-        """Get leads
-        doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-list
+        """Get contacts
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-list
         Args:
             limit (int, optional): limit of rows. Defaults to 250.
             page (int, optional): number of page. Defaults to 1.
@@ -1404,22 +1421,12 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/contacts'
-        params = {'limit': limit, 'page': page}
-        if with_params:
-            params['with'] = ','.join(param for param in with_params)
-        if filters:
-            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
-            params.update(filter_query)
-        if order:
-            order_query = {f'order[k]': v for k, v in order.items()}
-            params.update(order_query)
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        params = {k: v for k, v in locals().items() if k != 'self'}
+        return self._get_entities('contacts', **params)
 
     def get_contact(self, contact_id: int) -> dict:
         """Get contact
-        doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contact-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contact-detail
         Args:
             contact_id (int): id of contact
 
@@ -1506,7 +1513,7 @@ class BaseClient(object):
 
     def create_contacts(self, contacts: list) -> dict:
         """Create contacts
-        doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
         Args:
             contacts (list): list of contacts objects
 
@@ -1574,6 +1581,677 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/contacts'
         return self._create_or_update_entities('contacts', contacts, True)
 
+    def get_companies(
+        self,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Get companies
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-list
+        Args:
+            limit (int, optional): limit of page. Defaults to 250.
+            page (int, optional): page index. Defaults to 1.
+            with_params (Optional[list], optional): with params(check dock). Defaults to None.
+            filters (Optional[dict], optional): dict filters like({'[updated_at][from]: "<timestamp>"'}). Defaults to None.
+            order (Optional[dict], optional): dict like - {'updated_at': 'asc'}. Defaults to None.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/companies?limit=2&page=1"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/companies?limit=2&page=2"
+                    }
+                },
+                "_embedded": {
+                    "companies": [
+                            {
+                                "id": 7767077,
+                                "name": "Компания Васи",
+                                "responsible_user_id": 504141,
+                                "group_id": 0,
+                                "created_by": 504141,
+                                "updated_by": 504141,
+                                "created_at": 1586359618,
+                                "updated_at": 1586359618,
+                                "closest_task_at": null,
+                                "custom_fields_values": null,
+                                "account_id": 28805383,
+                                "_links": {
+                                    "self": {
+                                        "href": "https://example.amocrm.ru/api/v4/companies/7767077"
+                                    }
+                                },
+                                "_embedded": {
+                                    "tags": []
+                                }
+                            },
+                            {
+                                "id": 7767457,
+                                "name": "Example",
+                                "responsible_user_id": 504141,
+                                "group_id": 0,
+                                "created_by": 504141,
+                                "updated_by": 504141,
+                                "created_at": 1586360394,
+                                "updated_at": 1586360394,
+                                "closest_task_at": null,
+                                "custom_fields_values": null,
+                                "account_id": 28805383,
+                                "_links": {
+                                    "self": {
+                                        "href": "https://example.amocrm.ru/api/v4/companies/7767457"
+                                    }
+                                },
+                                "_embedded": {
+                                    "tags": []
+                                }
+                            }
+                        ]
+                    }
+                }
+        """
+        params = {k: v for k, v in locals().items() if k != 'self'}
+        return self._get_entities('companies', **params)
+
+    def get_company(self, company_id: int) -> dict:
+        """Get company
+
+        Args:
+            company_id (int): id of company
+
+        Returns:
+            dict: {
+                "id": 1,
+                "name": "АО Рога и копыта",
+                "responsible_user_id": 504141,
+                "group_id": 0,
+                "created_by": 504141,
+                "updated_by": 504141,
+                "created_at": 1582117331,
+                "updated_at": 1586361223,
+                "closest_task_at": null,
+                "custom_fields_values": [
+                    {
+                        "field_id": 3,
+                        "field_name": "Телефон",
+                        "field_code": "PHONE",
+                        "field_type": "multitext",
+                        "values": [
+                            {
+                                "value": "123213",
+                                "enum_id": 1,
+                                "enum": "WORK"
+                            }
+                        ]
+                    }
+                ],
+                "account_id": 28805383,
+                "_links": {
+                    "self": {
+                        "href": "https://exmaple.amocrm.ru/api/v4/companies/1"
+                    }
+                },
+                "_embedded": {
+                    "tags": []
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/companies/{company_id}'
+        return self._send_api_request('get', url)
+
+    def create_companies(self, companies: list) -> dict:
+        """Create companies
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-add
+        Args:
+            companies (list): list of companies
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/companies"
+                    }
+                },
+                "_embedded": {
+                    "companies": [
+                        {
+                            "id": 11090825,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/companies/11090825"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/companies'
+        return self._send_api_request('post', companies)
+
+    def update_companies(self, companies: list) -> dict:
+        """Update companies
+
+        Args:
+            companies (list): list of companies
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/companies"
+                    }
+                },
+                "_embedded": {
+                    "companies": [
+                        {
+                            "id": 11090825,
+                            "name": "Новое название компании",
+                            "updated_at": 1590998669,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/companies/11090825"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/companies'
+        return self._send_api_request('post', companies, True)
+
+    def get_catalogs(self, page: int = 1, limit: int = 250) -> dict:
+        """Get catalogs
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#lists-list
+        Args:
+            page (int, optional): page number. Defaults to 1.
+            limit (int, optional): limit of page result. Defaults to 250.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs?page=1&limit=50"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs?page=2&limit=50"
+                    }
+                },
+                "_embedded": {
+                    "catalogs": [
+                        {
+                            "id": 4589,
+                            "name": "Просто список",
+                            "created_by": 504141,
+                            "updated_by": 504141,
+                            "created_at": 1590742040,
+                            "updated_at": 1590742040,
+                            "sort": 10,
+                            "type": "regular",
+                            "can_add_elements": true,
+                            "can_show_in_cards": false,
+                            "can_link_multiple": true,
+                            "can_be_deleted": true,
+                            "sdk_widget_code": null,
+                            "account_id": 28805383,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/4589"
+                                }
+                            }
+                        },
+                        {
+                            "id": 4521,
+                            "name": "Товары",
+                            "created_by": 504141,
+                            "updated_by": 504141,
+                            "created_at": 1589390310,
+                            "updated_at": 1590742040,
+                            "sort": 20,
+                            "type": "products",
+                            "can_add_elements": true,
+                            "can_show_in_cards": false,
+                            "can_link_multiple": true,
+                            "can_be_deleted": false,
+                            "sdk_widget_code": null,
+                            "account_id": 28805383,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/4521"
+                                }
+                            }
+                        },
+                        {
+                            "id": 4517,
+                            "name": "Счета",
+                            "created_by": 504141,
+                            "updated_by": 504141,
+                            "created_at": 1589379462,
+                            "updated_at": 1590742040,
+                            "sort": 30,
+                            "type": "invoices",
+                            "can_add_elements": false,
+                            "can_show_in_cards": false,
+                            "can_link_multiple": true,
+                            "can_be_deleted": true,
+                            "sdk_widget_code": null,
+                            "account_id": 28805383,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/4517"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        params = {'page': page, 'limit': limit}
+        return self._get_entities('catalogs', **params)
+
+    def get_catalog(self, catalog_id: int) -> dict:
+        """Get catalog
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-detail
+        Args:
+            catalog_id (int): id of catalog
+
+        Returns:
+            dict: {
+                "id": 4589,
+                "name": "Просто список",
+                "created_by": 504141,
+                "updated_by": 504141,
+                "created_at": 1590742040,
+                "updated_at": 1590742040,
+                "sort": 10,
+                "type": "regular",
+                "can_add_elements": true,
+                "can_show_in_cards": false,
+                "can_link_multiple": true,
+                "can_be_deleted": true,
+                "sdk_widget_code": null,
+                "account_id": 28805383,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/4589"
+                    }
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/catalogs/{catalog_id}'
+        return self._send_api_request('get', url)
+
+    def create_catalogs(self, catalogs: list) -> dict:
+        """Create catalogs
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#lists-add
+        Args:
+            catalogs (list): list of catalogs
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs"
+                    }
+                },
+                "_embedded": {
+                    "catalogs": [
+                        {
+                            "id": 5785,
+                            "name": "Тестовый список",
+                            "created_by": 3944275,
+                            "updated_by": 3944275,
+                            "created_at": 1589397957,
+                            "updated_at": 1589397957,
+                            "sort": 10,
+                            "type": "regular",
+                            "can_add_elements": true,
+                            "can_show_in_cards": false,
+                            "can_link_multiple": false,
+                            "can_be_deleted": true,
+                            "account_id": 123123,
+                            "request_id": "123",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/5785"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities('catalogs', catalogs)
+
+    def update_catalogs(self, catalogs: list) -> dict:
+        """Update catalogs
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#lists-edit
+        Args:
+            catalogs (list): list of catalogs
+
+        Returns:
+            dict: {
+                "id": 5787,
+                "name": "Новое имя списка",
+                "created_by": 3944275,
+                "updated_by": 3944275,
+                "created_at": 1589399557,
+                "updated_at": 1589399886,
+                "sort": 30,
+                "type": "regular",
+                "can_add_elements": true,
+                "can_show_in_cards": false,
+                "can_link_multiple": false,
+                "can_be_deleted": true,
+                "account_id": 123123,
+                "request_id": "5787",
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/5787"
+                    }
+                }
+            }
+        """
+        return self._create_or_update_entities('catalogs', catalogs, True)
+
+    def get_catalog_elements(
+        self,
+        catalog_id: int,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+    ) -> dict:
+        """Get elements by catalog id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-list
+        Args:
+            catalog_id (int): id of catalog
+            page (int, optional): number of page. Defaults to 1.
+            limit (int, optional): limit rows. Defaults to 250.
+            filters (Optional[dict], optional): filter dict. Defaults to None.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/4521/elements?page=1&limit=50"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/4521/elements?page=2&limit=50"
+                    }
+                },
+                "_embedded": {
+                    "elements": [
+                        {
+                            "id": 525439,
+                            "name": "Элемент",
+                            "created_by": 504141,
+                            "updated_by": 504141,
+                            "created_at": 1589390333,
+                            "updated_at": 1590683336,
+                            "is_deleted": null,
+                            "custom_fields_values": [
+                                {
+                                    "field_id": 271207,
+                                    "field_name": "Артикул",
+                                    "field_code": "SKU",
+                                    "field_type": "text",
+                                    "values": [
+                                        {
+                                            "value": "dsg"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "field_id": 271209,
+                                    "field_name": "Описание",
+                                    "field_code": "DESCRIPTION",
+                                    "field_type": "textarea",
+                                    "values": [
+                                        {
+                                            "value": "Описание"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "field_id": 271211,
+                                    "field_name": "Цена",
+                                    "field_code": "PRICE",
+                                    "field_type": "numeric",
+                                    "values": [
+                                        {
+                                            "value": "12"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "field_id": 271213,
+                                    "field_name": "Группа",
+                                    "field_code": "GROUP",
+                                    "field_type": "category",
+                                    "values": [
+                                        {
+                                            "value": "Телефоны",
+                                            "enum_id": 10663
+                                        }
+                                    ]
+                                }
+                            ],
+                            "catalog_id": 4521,
+                            "account_id": 28805383,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/4521/elements/525439"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        params = {'page': page, 'limit': limit, 'filters': filters}
+        entity = f'catalogs/{catalog_id}/elements'
+        return self._get_entities(entity, **params)
+
+    def get_catalog_element(self, catalog_id: int, element_id: int) -> dict:
+        """Get catalog element
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-detail
+        Args:
+            catalog_id (int): id of catalog
+            element_id (int): id of element
+
+        Returns:
+            dict: {
+                "id": 525439,
+                "name": "Элемент",
+                "created_by": 504141,
+                "updated_by": 504141,
+                "created_at": 1589390333,
+                "updated_at": 1590683336,
+                "is_deleted": null,
+                "custom_fields_values": [
+                    {
+                        "field_id": 271207,
+                        "field_name": "Артикул",
+                        "field_code": "SKU",
+                        "field_type": "text",
+                        "values": [
+                            {
+                                "value": "dsg"
+                            }
+                        ]
+                    },
+                    {
+                        "field_id": 271209,
+                        "field_name": "Описание",
+                        "field_code": "DESCRIPTION",
+                        "field_type": "textarea",
+                        "values": [
+                            {
+                                "value": "Супер телефон"
+                            }
+                        ]
+                    },
+                    {
+                        "field_id": 271211,
+                        "field_name": "Цена",
+                        "field_code": "PRICE",
+                        "field_type": "numeric",
+                        "values": [
+                            {
+                                "value": "12"
+                            }
+                        ]
+                    },
+                    {
+                        "field_id": 271213,
+                        "field_name": "Группа",
+                        "field_code": "GROUP",
+                        "field_type": "category",
+                        "values": [
+                            {
+                                "value": "Телефоны",
+                                "enum_id": 10663
+                            }
+                        ]
+                    }
+                ],
+                "catalog_id": 4521,
+                "account_id": 28805383,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/4521/elements/525439"
+                    }
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/catalogs/{catalog_id}/elements/{element_id}'
+        return self._send_api_request('get', url)
+
+    def add_elements_to_catalog(self, catalog_id: int, elements: list) -> dict:
+        """Add elements to catalog
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-add
+        Args:
+            catalog_id (int): id of catalog
+            elements (list): list of elements
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/1209/elements"
+                    }
+                },
+                "_embedded": {
+                    "elements": [
+                        {
+                            "id": 986757,
+                            "name": "Новый элемент списка",
+                            "created_by": 3944275,
+                            "updated_by": 3944275,
+                            "created_at": 1589294541,
+                            "updated_at": 1589294541,
+                            "is_deleted": false,
+                            "custom_fields_values": [
+                                {
+                                    "field_id": 14687,
+                                    "field_name": "Цена",
+                                    "field_code": "PRICE",
+                                    "field_type": "numeric",
+                                    "values": [
+                                        {
+                                            "value": "1000"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "catalog_id": 1209,
+                            "account_id": 123123,
+                            "request_id": 0,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/1209/elements/986757"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities(
+            f'catalogs/{catalog_id}/elements', elements
+        )
+
+    def update_elements_to_catalog(self, catalog_id: int, elements: list) -> dict:
+        """Add elements to catalog
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-edit
+        Args:
+            catalog_id (int): id of catalog
+            elements (list): list of elements
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/catalogs/1209/elements"
+                    }
+                },
+                "_embedded": {
+                    "elements": [
+                        {
+                            "id": 986757,
+                            "name": "Новое имя элемента",
+                            "created_by": 3944275,
+                            "updated_by": 3944275,
+                            "created_at": 1589294541,
+                            "updated_at": 1589295769,
+                            "is_deleted": false,
+                            "custom_fields_values": [ ],
+                            "catalog_id": 1209,
+                            "account_id": 123123,
+                            "request_id": 986757,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/1209/elements/986757"
+                                }
+                            }
+                        },
+                        {
+                            "id": 986753,
+                            "name": "Новое имя элемента 2",
+                            "created_by": 3944275,
+                            "updated_by": 3944275,
+                            "created_at": 1589294429,
+                            "updated_at": 1589295769,
+                            "is_deleted": false,
+                            "custom_fields_values": [],
+                            "catalog_id": 1209,
+                            "account_id": 123123,
+                            "request_id": 986753,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/catalogs/1209/elements/986753"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities(
+            f'catalogs/{catalog_id}/elements', elements, True
+        )
+
     def _get_custom_fields(self, entity: str) -> dict:
         url = f'{self.crm_url}/api/v4/{entity}/custom_fields'
         return self._send_api_request('get', url)
@@ -1604,7 +2282,7 @@ class BaseClient(object):
         with_group: bool = False,
     ) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-list
         :param page: int (number of page) 
         :param limit_rows: int (limit)
         :param with_role: bool
@@ -1628,7 +2306,7 @@ class BaseClient(object):
         self, user_id: int, with_role: bool = False, with_group: bool = False,
     ) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
         :param user_id: int  
         :param with_role: bool
         :param with_group: bool
@@ -1647,14 +2325,14 @@ class BaseClient(object):
 
     def get_webhooks(self) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
         """
         url = f'{self.crm_url}/api/v4/webhooks'
         return self._send_api_request('get', url)
 
     def subscribe_webhook(self, destination: str, settings: list) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
         :param destination: str (webhook url)  
         :param settings: list (list of events)
         :return: dict
@@ -1665,14 +2343,14 @@ class BaseClient(object):
 
     def unsubscribe_webhook(self):
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-delete
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-delete
         """
         url = f'{self.crm_url}/api/v4/webhooks'
         return self._send_api_request('delete', url)
 
     def get_widgets(self, page: int = 1, limit_rows: int = 250) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
         :param page: int (page)  
         :param limit_rows: int 
         :return: dict
@@ -1684,7 +2362,7 @@ class BaseClient(object):
 
     def get_widget(self, widget_code: str) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-detail
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-detail
         :param widget_code: str
         :return: dict
         """
@@ -1693,7 +2371,7 @@ class BaseClient(object):
 
     def install_widget(self, widget_code: str, **kwargs) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
         :param widget_code: str (page)
         :return: dict
         """
@@ -1702,7 +2380,7 @@ class BaseClient(object):
 
     def uninstall_widget(self, widget_code: str) -> dict:
         """
-        doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-uninstall
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-uninstall
         :param widget_code: str (page)
         :return: dict
         """
