@@ -9,8 +9,8 @@ Install using `pip`...
 ## Usage
 =======
 ```python
-from amocrm import AmocrmLegacyClient # for login password auth
-from amocrm import AmocrmOAuthClient # for oauth
+from amocrm_api import AmocrmLegacyClient # for login password auth
+from amocrm_api import AmocrmOAuthClient # for oauth
 from datetime import datetime
 
 client = AmocrmLegacyClient('<login>', '<password>', '<crm_url>')

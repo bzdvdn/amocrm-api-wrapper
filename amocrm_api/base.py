@@ -86,7 +86,7 @@ class BaseClient(object):
 
     def link_leads_entity(self, entity_id: int, objects: list) -> dict:
         return self._link_entities('leads', entity_id, objects)
-    
+
     def link_contacts_entity(self, entity_id: int, objects: list) -> dict:
         return self._link_entities('contcats', entity_id, objects)
 
@@ -2446,3 +2446,298 @@ class BaseClient(object):
         """
         url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
         return self._send_api_request('delete', url)
+
+    def get_tasks(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Get tasks
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-list
+        Args:
+            page (int, optional): number of page. Defaults to 1.
+            limit (int, optional): limit row. Defaults to 250.
+            filters (Optional[dict], optional): {'[updated_at][from]': <timestamp>}. Defaults to None.
+            order (Optional[dict], optional): {'updated_at': <timestamp>}. Defaults to None.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/tasks?filter[task_type][]=2&filter[is_completed][]=1&limit=2&page=1"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/tasks?filter[task_type][]=2&filter[is_completed][]=1&limit=2&page=2"
+                    }
+                },
+                "_embedded": {
+                    "tasks": [
+                        {
+                            "id": 7087,
+                            "created_by": 3987910,
+                            "updated_by": 3987910,
+                            "created_at": 1575364000,
+                            "updated_at": 1575364851,
+                            "responsible_user_id": 123123,
+                            "group_id": 0,
+                            "entity_id": 167353,
+                            "entity_type": "leads",
+                            "duration": 0,
+                            "is_completed": true,
+                            "task_type_id": 2,
+                            "text": "Пригласить на бесплатную тренировку",
+                            "result": [],
+                            "complete_till": 1575665940,
+                            "account_id": 321321,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/7087"
+                                }
+                            }
+                        },
+                        {
+                            "id": 215089,
+                            "created_by": 0,
+                            "updated_by": 3987910,
+                            "created_at": 1576767879,
+                            "updated_at": 1576767914,
+                            "responsible_user_id": 123123,
+                            "group_id": 0,
+                            "entity_id": 1035487,
+                            "entity_type": "leads",
+                            "duration": 0,
+                            "is_completed": true,
+                            "task_type_id": 2,
+                            "text": "Назначить встречу с клиентом",
+                            "result": [],
+                            "complete_till": 1576768179,
+                            "account_id": 321312,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/215089"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        params = {k: v for k, v in locals().items() if k != 'self'}
+        return self._get_entities('tasks', **params)
+
+    def get_task(self, task_id: int) -> dict:
+        """Get task
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#task-detail
+        Args:
+            task_id (int): id of task
+
+        Returns:
+            dict: {
+                "id": 56981,
+                "created_by": 54224,
+                "updated_by": 3987910,
+                "created_at": 1575910123,
+                "updated_at": 1576767989,
+                "responsible_user_id": 123123,
+                "group_id": 0,
+                "entity_id": 180765,
+                "entity_type": "leads",
+                "duration": 0,
+                "is_completed": true,
+                "task_type_id": 2,
+                "text": "Назначить встречу с клиентом",
+                "result": {
+                    "text": "Результат есть"
+                },
+                "complete_till": 1575910423,
+                "account_id": 321312,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/tasks/56981"
+                    }
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/tasks/{task_id}'
+        return self._send_api_request('get', url)
+
+    def add_task(self, tasks: list) -> dict:
+        """Add tasks
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-add
+        Args:
+            tasks (list): list of task objects
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/tasks"
+                    }
+                },
+                "_embedded": {
+                    "tasks": [
+                        {
+                            "id": 4745251,
+                            "updated_at": 1588760725,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/4745251"
+                                }
+                            }
+                        },
+                        {
+                            "id": 4747929,
+                            "updated_at": 1588760725,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/4747929"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities('tasks', tasks)
+
+    def update_task(self, tasks: list) -> dict:
+        """Add tasks
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-edit
+        Args:
+            tasks (list): list of task objects
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/tasks"
+                    }
+                },
+                "_embedded": {
+                    "tasks": [
+                        {
+                            "id": 4745251,
+                            "updated_at": 1588760725,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/4745251"
+                                }
+                            }
+                        },
+                        {
+                            "id": 4747929,
+                            "updated_at": 1588760725,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/tasks/4747929"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities('tasks', tasks, True)
+
+    def execution_task(self, task_id: int, is_completed: bool, result: str) -> dict:
+        """Executuin task
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-complete
+        Args:
+            task_id (int): id of task
+            is_completed (bool): true if completed
+            result: (str) text of result
+
+        Returns:
+            dict: {
+                "is_completed": true,
+                "result": {
+                    "text": "Удалось связаться с клиентом"
+                }
+            }
+        """
+        url = f'{self.crm_url}/api/v4/tasks/{task_id}'
+        params = {'is_completed': is_completed, 'result': {'text': result}}
+        return self._send_api_request('patch', url, params)
+
+    def get_tags_by_entity_type(
+        self,
+        entity_type: str,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+    ) -> dict:
+        """Get tags by entity_type
+
+        Args:
+            entity_type (str): leads|contacts|companies|customers
+            page (int, optional): page number. Defaults to 1.
+            limit (int, optional): limit of rows. Defaults to 250.
+            filters (Optional[dict], optional): {'[name]': <name>}. Defaults to None.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/tags?filter[id][]=2707&filter[id][]=2709&page=1&limit=50"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/tags?filter[id][]=2707&filter[id][]=2709&page=2&limit=50"
+                    }
+                },
+                "_embedded": {
+                    "tags": [
+                        {
+                            "id": 2707,
+                            "name": "Заявка с сайта"
+                        },
+                        {
+                            "id": 2709,
+                            "name": "Техническая поддержка"
+                        }
+                    ]
+                }
+            }
+        """
+        params = {'page': page, 'limit': limit, 'filters': filters}
+        return self._get_entities(f'{entity_type}/tags', **params)
+
+    def add_tags_for_entity_type(self, entity_type: str, tags: list) -> dict:
+        """Add tags for entity type
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tags-api#tags-add
+        Args:
+            entity_type (str): leads|contacts|companies|customers
+            tags (list): list of tags
+
+        Returns:
+            dict: {
+                "_total_items": 3,
+                "_embedded": {
+                    "tags": [
+                        {
+                            "id": 263807,
+                            "name": "Tag 1",
+                            "request_id": "0"
+                        },
+                        {
+                            "id": 263809,
+                            "name": "Tag 2",
+                            "request_id": "my_request_id"
+                        },
+                        {
+                            "id": 263811,
+                            "name": "Tag 3",
+                            "request_id": "2"
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities(f'{entity_type}/tags/', tags)
