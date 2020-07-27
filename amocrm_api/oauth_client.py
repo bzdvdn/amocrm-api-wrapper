@@ -23,7 +23,7 @@ class AmoOAuthClient(BaseClient):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.session = self._init_session()
+        self._session = self._init_session()
 
     def _init_session(self, params: Optional[dict] = None) -> Session:
         session = Session()

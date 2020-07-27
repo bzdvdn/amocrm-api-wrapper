@@ -16,7 +16,7 @@ class BaseClient(object):
         Args:
             params (dict): like {'IF-MODIFIED-SINCE': <datetime>}
         """
-        self.session = self._init_session(params)
+        self._session = self._init_session(params)
 
     def _send_api_request(
         self, method: str, url: str, data: Optional[dict] = None

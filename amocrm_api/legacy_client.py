@@ -17,7 +17,7 @@ class AmoLegacyClient(BaseClient):
         self.login = login
         self.token = token
         self.crm_url = crm_url if not crm_url.endswith('/') else crm_url[:-1]
-        self.session = self._init_session()
+        self._session = self._init_session()
 
     def _init_session(self, headers: Optional[dict] = None) -> Session:
         """
@@ -38,7 +38,7 @@ class AmoLegacyClient(BaseClient):
         self, method: str, url: str, data: Optional[dict] = None
     ) -> dict:
         try:
-            response = self.session.__getattribute__(method)(url, json=data)
+            response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
                 return {}
             json_data = response.json()
