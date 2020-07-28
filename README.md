@@ -356,7 +356,6 @@ summary_unsorted = client.get_summary_unsorted()
 ```
 ### get pipelines
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipelines-list
-|
 ```python
 pipelines = client.get_pipelines()
 ```
@@ -483,13 +482,6 @@ result = client.add_statuses_to_pipeline(2310, statuses)
 | sort     |  int | - |
 | color     |  str | - |
 ```python
-statuses = [
-    {
-        "name": "Новый этап",
-        "sort": 100,
-        "color": "#fffeb2"
-    },
-]
 result = client.edit_pipeline_status(2310, 123, 'Новый Этап', sort=500, color="#fffeb2")
 ```
 ### delete status from pipeline
@@ -503,4 +495,170 @@ result = client.edit_pipeline_status(2310, 123, 'Новый Этап', sort=500,
 ```python
 
 result = client.delete_status_from_pipeline(2310, 123)
+```
+### get contacts
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-list
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit     |  int  | 250 |
+| page     |  int  | 1 |
+| with_params     |  Optional[list]  | None |
+| filters     |  Optional[dict]  | None |
+| order     |  Optional[dict]  | None |
+```python
+
+contacts = client.get_contacts(limit=10, page=3, filters={'[updated_at][from]': '<timestamp>'})
+```
+
+### get contact
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contact-detail
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| contact_id     |  int  | - |
+```python
+
+contact = client.get_contact(123989)
+```
+### create contacts
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| contacts     |  list  | - |
+```python
+conctacts = [
+    {
+        "first_name": "Петр",
+        "last_name": "Смирнов",
+        "custom_fields_values": [
+            {
+                "field_id": 271316,
+                "values": [
+                    {
+                        "value": "Директор"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Владимир Смирнов",
+        "created_by": 47272
+    }
+]
+result = client.create_contacts(contacts)
+```
+### update contacts
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-edit
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| contacts     |  list  | - |
+```python
+conctacts = [
+    {
+        "id": 3,
+        "first_name": "Иван",
+        "last_name": "Иванов",
+        "custom_fields_values": [
+            {
+                "field_id": 66192,
+                "field_name": "Телефон",
+                "values": [
+                    {
+                        "value": "79999999999",
+                        "enum_code": "WORK"
+                    }
+                ]
+            }
+       ]
+    }
+]
+result = client.update_contacts(contacts)
+```
+### get companies
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-list
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| limit     |  int  | 250 |
+| page     |  int  | 1 |
+| with_params     |  Optional[list]  | None |
+| filters     |  Optional[dict]  | None |
+| order     |  Optional[dict]  | None |
+```python
+
+companies = client.get_companies(limit=10, page=3, filters={'[updated_at][from]': '<timestamp>'})
+```
+### get company
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/companies-api#company-detail
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| company_id     |  int  | - |
+```python
+
+company = client.get_company(9988)
+```
+
+### create companies
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-add
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| companies     |  list  | - |
+```python
+companies = [
+    {
+        "name": "АО Рога и Копыта",
+        "custom_fields_values": [
+            {
+                "field_code": "PHONE",
+                "values": [
+                    {
+                        "value": "+7912322222",
+                        "enum_code": "WORK"
+                    }
+                ]
+            }
+        ]
+    }
+]
+result = client.create_companies(companies)
+```
+### update companies
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-edit
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| companies     |  list  | - |
+```python
+companies = [
+    {
+        "id": 11090825,
+        "name": "Новое название компании",
+        "custom_fields_values": [
+            {
+                "field_code": "EMAIL",
+                "values": [
+                    {
+                        "value": "test@example.com",
+                        "enum_code": "WORK"
+                    }
+                ]
+            }
+       ]
+    }
+]
+result = client.update_companies(companies)
 ```

@@ -1825,7 +1825,7 @@ class BaseClient(object):
 
     def get_company(self, company_id: int) -> dict:
         """Get company
-
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/companies-api#company-detail
         Args:
             company_id (int): id of company
 
