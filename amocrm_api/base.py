@@ -2355,7 +2355,7 @@ class BaseClient(object):
             f'catalogs/{catalog_id}/elements', elements
         )
 
-    def update_elements_to_catalog(self, catalog_id: int, elements: list) -> dict:
+    def update_elements_in_catalog(self, catalog_id: int, elements: list) -> dict:
         """Add elements to catalog
         Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-edit
         Args:
