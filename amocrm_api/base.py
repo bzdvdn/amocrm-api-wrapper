@@ -1083,7 +1083,7 @@ class BaseClient(object):
 
     def get_pipeline(self, pipeline_id: int) -> dict:
         """get leads pipeline
-
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipelines-list
         Returns:
             dict: {
                 "id": 3177727,
@@ -1209,12 +1209,12 @@ class BaseClient(object):
             'name': name,
             'sort': sort,
             'is_main': is_main,
-            'statuses': statuses,
+            '_embedded': {'statuses': statuses},
             'is_unsorted_on': is_unsorted_on,
         }
         if request_id:
             params['request_id'] = request_id
-        return self._send_api_request('post', url, params)
+        return self._send_api_request('post', url, [params])
 
     def edit_pipeline(
         self,
