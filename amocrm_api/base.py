@@ -136,7 +136,110 @@ class BaseClient(object):
             with_datetime_settings (bool, optional):. Defaults to False.
 
         Returns:
-            dict: query result
+            dict: {
+                "id": 1231414,
+                "name": "example",
+                "subdomain": "example",
+                "created_at": 1585840134,
+                "created_by": 321321,
+                "updated_at": 1589472711,
+                "updated_by": 321321,
+                "current_user_id": 581651,
+                "country": "RU",
+                "customers_mode": "segments",
+                "is_unsorted_on": true,
+                "is_loss_reason_enabled": true,
+                "is_helpbot_enabled": false,
+                "is_technical_account": false,
+                "contact_name_display_order": 1,
+                "amojo_id": "f3c6340d-410e-4ad1-9f7e-c5e663599909",
+                "uuid": "824f3a59-6154-4edf-ba90-0b5593715d07",
+                "version": 11,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/account"
+                    }
+                },
+                "_embedded": {
+                    "amojo_rights": {
+                        "can_direct": true,
+                        "can_create_groups": true
+                    },
+                    "users_groups": [
+                        {
+                            "id": 0,
+                            "name": "Отдел продаж",
+                            "uuid": null
+                        }
+                    ],
+                    "task_types": [
+                        {
+                            "id": 1,
+                            "name": "Связаться",
+                            "color": null,
+                            "icon_id": null,
+                            "code": "FOLLOW_UP"
+                        },
+                        {
+                            "id": 2,
+                            "name": "Встреча",
+                            "color": null,
+                            "icon_id": null,
+                            "code": "MEETING"
+                        }
+                    ],
+                    "entity_names": {
+                        "leads": {
+                            "ru": {
+                                "gender": "m",
+                                "plural_form": {
+                                    "dative": "клиентам",
+                                    "default": "клиенты",
+                                    "genitive": "клиентов",
+                                    "accusative": "клиентов",
+                                    "instrumental": "клиентами",
+                                    "prepositional": "клиентах"
+                                },
+                                "singular_form": {
+                                    "dative": "клиенту",
+                                    "default": "клиент",
+                                    "genitive": "клиента",
+                                    "accusative": "клиента",
+                                    "instrumental": "клиентом",
+                                    "prepositional": "клиенте"
+                                }
+                            },
+                            "en": {
+                                "singular_form": {
+                                    "default": "lead"
+                                },
+                                "plural_form": {
+                                    "default": "leads"
+                                },
+                                "gender": "f"
+                            },
+                            "es": {
+                                "singular_form": {
+                                    "default": "acuerdo"
+                                },
+                                "plural_form": {
+                                    "default": "acuerdos"
+                                },
+                                "gender": "m"
+                            }
+                        }
+                    },
+                    "datetime_settings": {
+                        "date_pattern": "d.m.Y H:i",
+                        "short_date_pattern": "d.m.Y",
+                        "short_time_pattern": "H:i",
+                        "date_formant": "d.m.Y",
+                        "time_format": "H:i:s",
+                        "timezone": "Europe/Moscow",
+                        "timezone_offset": "+03:00"
+                    }
+                }
+                }
         """
         params = {k.replace('with_', ''): v for k, v in locals().items() if k != 'self'}
         with_params = [param for param, value in params.items() if value]
@@ -339,7 +442,7 @@ class BaseClient(object):
         order: Optional[dict] = None,
     ) -> dict:
         """Get leads
-
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-list
         Args:
             limit (int, optional): limit of rows. Defaults to 250.
             page (int, optional): number of page. Defaults to 1.
@@ -819,16 +922,16 @@ class BaseClient(object):
     def get_summary_unsorted(
         self,
         uid: Union[str, list, None] = None,
-        created_at__from: Union[str, list, None] = None,
-        created_at__to: Union[str, list, None] = None,
+        created_at__from: Optional[str] = None,
+        created_at__to: Optional[str] = None,
         pipeline_id: Union[str, list, None] = None,
     ) -> dict:
         """Get summarty unsorted object
-
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-summary
         Args:
             uid (Union[str, list, None], optional): list or str uids. Defaults to None.
-            created_at__from (Union[str, list, None], optional): timestamp. Defaults to None.
-            created_at__to (Union[str, list, None], optional): timestamp. Defaults to None.
+            created_at__from (Optional[str], optional): timestamp. Defaults to None.
+            created_at__to (Optional[str]], optional): timestamp. Defaults to None.
             pipeline_id (Union[str, list, None], optional): int. Defaults to None.
 
         Returns:
