@@ -2468,12 +2468,92 @@ class BaseClient(object):
     def get_user(
         self, user_id: int, with_role: bool = False, with_group: bool = False,
     ) -> dict:
-        """
+        """Get user
         Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
-        :param user_id: int  
-        :param with_role: bool
-        :param with_group: bool
-        :return: dict
+        Args:
+            user_id (int): id of user
+            with_role (bool, optional): return roles. Defaults to False.
+            with_group (bool, optional): return groups. Defaults to False.
+
+        Returns:
+            dict: {
+                "id": 185848,
+                "name": "Алексей Поимцев",
+                "email": "test@example.com",
+                "lang": "ru",
+                "rights": {
+                    "leads": {
+                        "view": "M",
+                        "edit": "M",
+                        "add": "D",
+                        "delete": "M",
+                        "export": "M"
+                    },
+                    "contacts": {
+                        "view": "M",
+                        "edit": "M",
+                        "add": "D",
+                        "delete": "M",
+                        "export": "M"
+                    },
+                    "companies": {
+                        "view": "M",
+                        "edit": "M",
+                        "add": "D",
+                        "delete": "M",
+                        "export": "M"
+                    },
+                    "tasks": {
+                        "edit": "A",
+                        "delete": "A"
+                    },
+                    "mail_access": false,
+                    "catalog_access": true,
+                    "status_rights": [
+                        {
+                            "entity_type": "leads",
+                            "pipeline_id": 3166396,
+                            "status_id": 142,
+                            "rights": {
+                                "view": "D",
+                                "edit": "D",
+                                "delete": "D",
+                                "export": "D"
+                            }
+                        },
+                        {
+                            "entity_type": "leads",
+                            "pipeline_id": 3166396,
+                            "status_id": 32311027,
+                            "rights": {
+                                "view": "D",
+                                "edit": "D",
+                                "delete": "D"
+                            }
+                        },
+                        {
+                            "entity_type": "leads",
+                            "pipeline_id": 3104455,
+                            "status_id": 31881115,
+                            "rights": {
+                                "view": "D",
+                                "edit": "D",
+                                "delete": "D"
+                            }
+                        }
+                    ],
+                    "is_admin": false,
+                    "is_free": false,
+                    "is_active": true,
+                    "group_id": null,
+                    "role_id": null
+                },
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/users/185848"
+                    }
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/users/{user_id}'
         with_ = []

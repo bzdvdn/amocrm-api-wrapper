@@ -719,7 +719,8 @@ result = client.update_catalogs(catalogs)
 ```
 ### get elements from catalog
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-list
-* params:  
+* params: 
+ 
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | catalogs_id     |  int  | - |
@@ -741,7 +742,8 @@ element = client.get_catalog_element(5787, 2301)
 ```
 ### add elements to catalog
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-add
-* params:  
+* params:
+
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | catalogs_id     |  int  | - |
@@ -767,6 +769,7 @@ result = client.add_elements_to_catalog(5787, elements)
 ### update elements in catalog
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-edit
 * params:  
+
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | catalogs_id     |  int  | - |
@@ -783,4 +786,29 @@ elements = [
     }
 ]
 result = client.update_elements_in_catalog(5787, elements)
+```
+### get users
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/users-api#users-list
+* params: 
+ 
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| page     |  int  | 1 |
+| limit_rows     |  list  | 250 |
+| with_role     |  bool  | False |
+| with_group     |  bool  | False |
+```python
+users = client.get_users(page=1, limit_rows=250)
+```
+### get user
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| user_id     |  int  | 1 |
+| with_role     |  bool  | False |
+| with_group     |  bool  | False |
+```python
+user = client.get_user(2222, with_role=True, with_group=True)
 ```
