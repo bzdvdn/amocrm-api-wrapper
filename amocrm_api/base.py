@@ -2440,20 +2440,172 @@ class BaseClient(object):
     def get_users(
         self,
         page: int = 1,
-        limit_rows: int = 250,
+        limit: int = 250,
         with_role: bool = False,
         with_group: bool = False,
     ) -> dict:
-        """
+        """Get users
         Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-list
-        :param page: int (number of page) 
-        :param limit_rows: int (limit)
-        :param with_role: bool
-        :param with_group: bool
-        :return: dict
+        Args:
+            page (int, optional): number of page. Defaults to 1.
+            limit (int, optional): limit rows. Defaults to 250.
+            with_role (bool, optional): return roles by user. Defaults to False.
+            with_group (bool, optional): retur groups by user. Defaults to False.
+
+        Returns:
+            dict: {
+                "_total_items": 2,
+                "_page": 1,
+                "_page_count": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/users/?with=role,group"
+                    }
+                },
+                "_embedded": {
+                    "users": [
+                        {
+                            "id": 123123,
+                            "name": "Пользователь для примера 2",
+                            "email": "example2@mail.com",
+                            "lang": "en",
+                            "rights": {
+                                "leads": {
+                                    "view": "A",
+                                    "edit": "A",
+                                    "add": "A",
+                                    "delete": "A",
+                                    "export": "A"
+                                },
+                                "contacts": {
+                                    "view": "A",
+                                    "edit": "A",
+                                    "add": "A",
+                                    "delete": "A",
+                                    "export": "A"
+                                },
+                                "companies": {
+                                    "view": "A",
+                                    "edit": "A",
+                                    "add": "A",
+                                    "delete": "A",
+                                    "export": "A"
+                                },
+                                "tasks": {
+                                    "edit": "A",
+                                    "delete": "A"
+                                },
+                                "mail_access": false,
+                                "catalog_access": false,
+                                "status_rights": [
+                                    {
+                                        "entity_type": "leads",
+                                        "pipeline_id": 2194576,
+                                        "status_id": 30846277,
+                                        "rights": {
+                                            "view": "A",
+                                            "edit": "A",
+                                            "delete": "A"
+                                        }
+                                    },
+                                    {
+                                        "entity_type": "leads",
+                                        "pipeline_id": 2212201,
+                                        "status_id": 30965377,
+                                        "rights": {
+                                            "view": "A",
+                                            "edit": "A",
+                                            "delete": "A"
+                                        }
+                                    }
+                                ],
+                                "is_admin": false,
+                                "is_free": false,
+                                "is_active": true,
+                                "group_id": null,
+                                "role_id": null
+                            },
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/users/123123/"
+                                }
+                            },
+                            "_embedded": {
+                            "roles": [
+                                    {
+                                        "id": 3141,
+                                        "name": "Менеджер",
+                                        "_links": {
+                                            "self": {
+                                                "href": "https://example.amocrm.ru/api/v4/roles/3141"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "groups": [
+                                    {
+                                        "id": 267688,
+                                        "name": "Менеджеры"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 321321,
+                            "name": "Пользователь для примера 2",
+                            "email": "example2@mail.com",
+                            "lang": "ru",
+                            "rights": {
+                                "leads": {
+                                    "view": "A",
+                                    "edit": "A",
+                                    "add": "G",
+                                    "delete": "D",
+                                    "export": "M"
+                                },
+                                "contacts": {
+                                    "view": "A",
+                                    "edit": "A",
+                                    "add": "G",
+                                    "delete": "M",
+                                    "export": "D"
+                                },
+                                "companies": {
+                                    "view": "A",
+                                    "edit": "G",
+                                    "add": "G",
+                                    "delete": "D",
+                                    "export": "D"
+                                },
+                                "tasks": {
+                                    "edit": "A",
+                                    "delete": "A"
+                                },
+                                "mail_access": true,
+                                "catalog_access": true,
+                                "status_rights": null,
+                                "is_admin": true,
+                                "is_free": false,
+                                "is_active": true,
+                                "group_id": null,
+                                "role_id": null
+                            },
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/users/321321"
+                                }
+                            },
+                            "_embedded": {
+                                "roles": [],
+                                "groups": []
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/users'
-        params = {'page': page, 'limit_rows': limit_rows}
+        params = {'page': page, 'limit': limit}
         with_ = []
         if with_group:
             with_.append('group')
@@ -2566,19 +2718,74 @@ class BaseClient(object):
             url = f'{url}?with={with_str}'
         return self._send_api_request('get', url)
 
-    def get_webhooks(self) -> dict:
-        """
+    def get_webhooks(self, distansion: Optional[str] = None) -> dict:
+        """Get webwooks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+        Args:
+            distansion (Optional[str], optional): filter by webhook url. Defaults to None.
+
+        Returns:
+            dict: {
+                "_total_items": 2,
+                "_embedded": {
+                    "webhooks": [
+                        {
+                            "id": 839656,
+                            "destination": "https://webhook-uri.com",
+                            "created_at": 1575539157,
+                            "updated_at": 1575539157,
+                            "account_id": 321321,
+                            "created_by": 123123,
+                            "sort": 1,
+                            "disabled": false,
+                            "settings": [
+                                "add_task"
+                            ]
+                        },
+                        {
+                            "id": 849193,
+                            "destination": "https://api.test.ru/amoWebHook",
+                            "created_at": 1576157524,
+                            "updated_at": 1585816857,
+                            "account_id": 321321,
+                            "created_by": 123123,
+                            "sort": 2,
+                            "disabled": true,
+                            "settings": [
+                                "update_lead"
+                            ]
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/webhooks'
+        if distansion:
+            params = {'filter[distansion]': distansion}
+            url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
     def subscribe_webhook(self, destination: str, settings: list) -> dict:
-        """
-        Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
-        :param destination: str (webhook url)  
-        :param settings: list (list of events)
-        :return: dict
+        """Subscribe on webhook
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhook-subscribe
+        Args:
+            destination (str): webhook url
+            settings (list): webhook settings
+
+        Returns:
+            dict: {
+                "id": 1056949,
+                "destination": "https://example.test",
+                "created_at": 1589012268,
+                "updated_at": 1589012268,
+                "account_id": 321321,
+                "created_by": 3944275,
+                "sort": 1,
+                "disabled": false,
+                "settings": [
+                    "add_lead"
+                ]
+            }
         """
         url = f'{self.crm_url}/api/v4/webhooks'
         params = {'destination': destination, 'settings': settings}
@@ -2591,42 +2798,193 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/webhooks'
         return self._send_api_request('delete', url)
 
-    def get_widgets(self, page: int = 1, limit_rows: int = 250) -> dict:
-        """
+    def get_widgets(self, page: int = 1, limit: int = 250) -> dict:
+        """Get widgets
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
-        :param page: int (page)  
-        :param limit_rows: int 
-        :return: dict
+        Args:
+            page (int, optional): number of page. Defaults to 1.
+            limit (int, optional): limit rows. Defaults to 250.
+
+        Returns:
+            dict: {
+                "_page": 1,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/widgets?limit=2&page=1"
+                    },
+                    "next": {
+                        "href": "https://example.amocrm.ru/api/v4/widgets?limit=2&page=2"
+                    }
+                },
+                "_embedded": {
+                    "widgets": [
+                        {
+                            "id": 742,
+                            "code": "amo_dropbox",
+                            "version": "0.0.13",
+                            "rating": "2,8",
+                            "settings_template": [
+                                {
+                                    "key": "conf",
+                                    "name": "custom",
+                                    "type": "custom",
+                                    "is_required": false
+                                }
+                            ],
+                            "is_lead_source": false,
+                            "is_work_with_dp": false,
+                            "is_crm_template": false,
+                            "client_uuid": null,
+                            "is_active_in_account": false,
+                            "pipeline_id": null,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/widgets/amo_dropbox"
+                                }
+                            }
+                        },
+                        {
+                            "id": 796,
+                            "code": "amo_mailchimp",
+                            "version": "1.1.12",
+                            "rating": "3,4",
+                            "settings_template": [
+                                {
+                                    "key": "api",
+                                    "name": "custom",
+                                    "type": "custom",
+                                    "is_required": false
+                                }
+                            ],
+                            "is_lead_source": false,
+                            "is_work_with_dp": false,
+                            "is_crm_template": false,
+                            "client_uuid": null,
+                            "is_active_in_account": false,
+                            "pipeline_id": null,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/widgets/amo_mailchimp"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/widgets'
-        params = {'page': page, 'limit': limit_rows}
+        params = {'page': page, 'limit': limit}
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
     def get_widget(self, widget_code: str) -> dict:
-        """
+        """Get widget
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-detail
-        :param widget_code: str
-        :return: dict
+        Args:
+            widget_code (str): code of widget
+
+        Returns:
+            dict: {
+                "id": 742,
+                "code": "amo_dropbox",
+                "version": "0.0.13",
+                "rating": "2,8",
+                "settings_template": [
+                    {
+                        "key": "conf",
+                        "name": "custom",
+                        "type": "custom",
+                        "is_required": false
+                    }
+                ],
+                "is_lead_source": false,
+                "is_work_with_dp": false,
+                "is_crm_template": false,
+                "client_uuid": null,
+                "is_active_in_account": false,
+                "pipeline_id": null,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/widgets/amo_dropbox"
+                    }
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
         return self._send_api_request('get', url)
 
     def install_widget(self, widget_code: str, **kwargs) -> dict:
-        """
+        """Install widget
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
-        :param widget_code: str (page)
-        :return: dict
+        Args:
+            widget_code (str): widget code
+
+        Returns:
+            dict: {
+                "id": 972,
+                "code": "amo_asterisk",
+                "version": "1.1.6",
+                "rating": "2,7",
+                "settings_template": [
+                    {
+                        "key": "login",
+                        "name": "Логин",
+                        "type": "text",
+                        "is_required": true
+                    },
+                    {
+                        "key": "password",
+                        "name": "Пароль",
+                        "type": "pass",
+                        "is_required": true
+                    },
+                    {
+                        "key": "phones",
+                        "name": "Список телефонов",
+                        "type": "users",
+                        "is_required": true
+                    },
+                    {
+                        "key": "script_path",
+                        "name": "Путь к скрипту",
+                        "type": "text",
+                        "is_required": true
+                    }
+                ],
+                "is_lead_source": false,
+                "is_work_with_dp": false,
+                "is_crm_template": false,
+                "client_uuid": null,
+                "is_active_in_account": true,
+                "pipeline_id": null,
+                "settings": {
+                    "login": "example",
+                    "password": "eXaMp1E",
+                    "phones": {
+                        "504141": "1039"
+                    },
+                    "script_path": "https://example.com/"
+                },
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/widgets/amo_asterisk"
+                    }
+                }
+            }
         """
         url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
         return self._send_api_request('post', url, kwargs)
 
     def uninstall_widget(self, widget_code: str) -> dict:
-        """
+        """Uninstall widget
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-uninstall
-        :param widget_code: str (page)
-        :return: dict
+        Args:
+            widget_code (str): code of widget
+
+        Returns:
+            dict: [description]
         """
+        
         url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
         return self._send_api_request('delete', url)
 

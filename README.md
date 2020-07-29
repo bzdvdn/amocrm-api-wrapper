@@ -794,11 +794,11 @@ result = client.update_elements_in_catalog(5787, elements)
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | page     |  int  | 1 |
-| limit_rows     |  list  | 250 |
+| limit     |  list  | 250 |
 | with_role     |  bool  | False |
 | with_group     |  bool  | False |
 ```python
-users = client.get_users(page=1, limit_rows=250)
+users = client.get_users(page=1, limit=250)
 ```
 ### get user
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
@@ -811,4 +811,75 @@ users = client.get_users(page=1, limit_rows=250)
 | with_group     |  bool  | False |
 ```python
 user = client.get_user(2222, with_role=True, with_group=True)
+```
+### get webhooks
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| distansion     |  Optional[str]  | None |
+```python
+webhooks = client.get_webhooks()
+```
+### subscribe webhook
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhook-subscribe
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| distansion     |  str  | - |
+| settings     |  list  | - |
+```python
+result = client.subscribe_webhook(destination="https://example.test", settings=["add_lead"])
+```
+### get widgets
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| page     |  int  | 1 |
+| limit     |  int  | 250 |
+```python
+widgets = client.get_widgets(page=3, limit=22)
+```
+### get widget
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-detail
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| widget_code     |  str  | - |
+```python
+widget = client.get_widget('<widget_code>')
+```
+### install widget
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| widget_code     |  str  | - |
+| **kwargs     |  str  | - |
+```python
+example ={
+    "login": "example",
+    "password": "eXaMp1E",
+    "phones": {
+        504141: "1039"
+    },
+    "script_path": "https://example.com/"
+}
+result = client.install_widget('<widget_code>', **example)
+```
+### uninstall widget
+* doc -  https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-uninstall
+* params:  
+
+| name       | type                | default value |
+| :------------------:|:------------------:| :------------------:|
+| widget_code     |  str  | - |
+```python
+result = client.uninstall_widget('<widget_code>')
 ```
