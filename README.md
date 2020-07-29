@@ -663,7 +663,8 @@ result = client.update_companies(companies)
 ```
 ### get catalogs
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#lists-list
-* params:  
+* params:
+
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | page     |  int  | 1 |
@@ -673,7 +674,8 @@ catalogs = client.get_catalogs(page=1, limit=5)
 ```
 ### get catalog
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-detail
-* params:  
+* params: 
+ 
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | catalog_id     |  int  | 1 |
