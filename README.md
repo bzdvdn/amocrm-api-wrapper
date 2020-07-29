@@ -734,7 +734,8 @@ elements = client.get_catalog_elements(5787, page=3, limit=8)
 ```
 ### get element from catalog
 * doc -  https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-detail
-* params:  
+* params:
+
 | name       | type                | default value |
 | :------------------:|:------------------:| :------------------:|
 | catalogs_id     |  int  | - |
