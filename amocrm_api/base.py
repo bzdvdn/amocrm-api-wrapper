@@ -2982,9 +2982,9 @@ class BaseClient(object):
             widget_code (str): code of widget
 
         Returns:
-            dict: [description]
+            dict: {}
         """
-        
+
         url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
         return self._send_api_request('delete', url)
 
@@ -3105,7 +3105,7 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/tasks/{task_id}'
         return self._send_api_request('get', url)
 
-    def add_task(self, tasks: list) -> dict:
+    def add_tasks(self, tasks: list) -> dict:
         """Add tasks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-add
         Args:
@@ -3146,7 +3146,7 @@ class BaseClient(object):
         """
         return self._create_or_update_entities('tasks', tasks)
 
-    def update_task(self, tasks: list) -> dict:
+    def update_tasks(self, tasks: list) -> dict:
         """Add tasks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-edit
         Args:
@@ -3215,7 +3215,7 @@ class BaseClient(object):
         filters: Optional[dict] = None,
     ) -> dict:
         """Get tags by entity_type
-
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/tags-api#tags-list
         Args:
             entity_type (str): leads|contacts|companies|customers
             page (int, optional): page number. Defaults to 1.

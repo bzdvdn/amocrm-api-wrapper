@@ -9,10 +9,12 @@ from .base import BaseClient
 
 class AmoLegacyClient(BaseClient):
     def __init__(self, login: str, token: str, crm_url: str) -> None:
-        """
-        :param login: str (Login from amocrm)
-        :param token: str (Api key from amocrm)
-        :param crm_url: str (url from your amocrm)
+        """Init
+
+        Args:
+            login (str): login
+            token (str): seckter token
+            crm_url (str): your crm url like https://example.amocrm.ru
         """
         self.login = login
         self.token = token
@@ -20,9 +22,16 @@ class AmoLegacyClient(BaseClient):
         self._session = self._init_session()
 
     def _init_session(self, headers: Optional[dict] = None) -> Session:
-        """
-        :param headers: dict (amo headers params)
-        :return: None
+        """Init session
+
+        Args:
+            headers (Optional[dict], optional): headers params. Defaults to None.
+
+        Raises:
+            AmoException: if invalid auth data
+
+        Returns:
+            Session: session
         """
         url = f"{self.crm_url}/private/api/auth.php?type=json"
         params = {"USER_LOGIN": self.login, "USER_HASH": self.token}
