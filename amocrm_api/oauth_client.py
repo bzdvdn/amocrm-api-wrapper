@@ -46,7 +46,7 @@ class AmoOAuthClient(BaseClient):
             response = super()._send_api_request(method, url, data)
             return response
         except AmoException as e:
-            if 'Неверный логин или пароль' in str(e) and not update_tokens:
+            if 'Jsonstatus: 401' in str(e) and not update_tokens:
                 self.update_tokens()
                 return self._send_api_request(method, url, data, True)
             raise
