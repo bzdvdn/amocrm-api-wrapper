@@ -1,4 +1,4 @@
-from json import JSONDecodeError
+from json import JSONDecodeError, loads
 from requests import Session, ConnectionError, ConnectTimeout
 from typing import Optional, Union
 from urllib.parse import urlencode
@@ -25,7 +25,10 @@ class BaseClient(object):
             response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
                 return {}
-            data = response.json()
+            raw_data = response.content.decode('utf-8')
+            if not raw_data:
+                return {}
+            data = loads(raw_data)
             json_data = data['response'] if 'response' in data else data
             if 'error' in json_data:
                 raise AmoException(json_data)
