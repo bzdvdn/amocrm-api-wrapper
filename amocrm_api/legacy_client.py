@@ -39,7 +39,7 @@ class AmoLegacyClient(BaseClient):
         if isinstance(headers, dict):
             session.headers.update(**headers)
         auth_response = session.post(url, json=params).json()
-        if auth_response["response"]["auth"]:
+        if  auth_response.get("response", {}).get("auth", {}):
             return session
         raise AmoException(auth_response)
 
