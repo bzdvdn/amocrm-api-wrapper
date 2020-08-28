@@ -22,7 +22,7 @@ class BaseClient(object):
         self, method: str, url: str, data: Optional[dict] = None
     ) -> dict:
         try:
-            response = self.session.__getattribute__(method)(url, json=data)
+            response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
                 return {}
             data = response.json()
