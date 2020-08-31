@@ -1,5 +1,5 @@
 from json import JSONDecodeError, loads
-from requests import Session, ConnectionError, ConnectTimeout
+from requests import Session, ConnectionError, ConnectTimeout, Response
 from typing import Optional, Union
 from urllib.parse import urlencode
 
@@ -18,6 +18,13 @@ class BaseClient(object):
         """
         self._session = self._init_session(params)
 
+    def _parse_response_body(self, response: Response) -> dict:
+        raw_data = response.content.decode('utf-8')
+        if not raw_data:
+            return {}
+        data = loads(raw_data)
+        return data
+
     def _send_api_request(
         self, method: str, url: str, data: Optional[dict] = None
     ) -> dict:
@@ -25,16 +32,13 @@ class BaseClient(object):
             response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
                 return {}
-            raw_data = response.content.decode('utf-8')
-            if not raw_data:
-                return {}
-            data = loads(raw_data)
+            data = self._parse_response_body(response)
+            if 'error' in data or response.status_code >= 400:
+                raise AmoException(data, code=response.status_code)
             json_data = data['response'] if 'response' in data else data
-            if 'error' in json_data:
-                raise AmoException(json_data)
             return json_data
         except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
-            raise AmoException({'error': str(e)})
+            raise AmoException({'error': str(e)}, code=500)
 
     def _get_entities(
         self,
