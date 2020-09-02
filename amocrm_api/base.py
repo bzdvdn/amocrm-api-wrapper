@@ -697,7 +697,7 @@ class BaseClient(object):
         source_uid: str,
         source_name: str,
         metadata: dict,
-        conctact: dict,
+        contact: dict,
         lead: dict,
         comapany: dict,
         pipeline_id: Optional[int] = None,
@@ -711,7 +711,7 @@ class BaseClient(object):
             source_uid (str): unique uid
             source_name (str): name of unsorted object
             metadata (dict): meta object
-            conctact (dict): contact object
+            contact (dict): contact object
             lead (dict): lead object
             comapany (dict): company object
             pipeline_id (Optional[int], optional): id of pipeline. Defaults to None.
@@ -765,9 +765,9 @@ class BaseClient(object):
             'source_uid': source_uid,
             'source_name': source_name,
             'metadata': metadata,
-            'contact': conctact,
+            'contact': contact,
         }
-        _embedded = {'contacts': [conctact], 'leads': [lead], 'companies': [comapany]}
+        _embedded = {'contacts': [contact], 'leads': [lead], 'companies': [comapany]}
         params['_embedded'] = _embedded
         if request_id:
             params['request_id'] = request_id
@@ -782,7 +782,7 @@ class BaseClient(object):
         source_uid: str,
         source_name: str,
         metadata: dict,
-        conctact: dict,
+        contact: dict,
         lead: dict,
         comapany: dict,
         pipeline_id: Optional[int] = None,
@@ -800,7 +800,7 @@ class BaseClient(object):
         source_uid: str,
         source_name: str,
         metadata: dict,
-        conctact: dict,
+        contact: dict,
         lead: dict,
         comapany: dict,
         pipeline_id: Optional[int] = None,
@@ -1719,7 +1719,7 @@ class BaseClient(object):
         """
         return self._create_or_update_entities('contacts', contacts)
 
-    def update_conctacts(self, contacts: list) -> dict:
+    def update_contacts(self, contacts: list) -> dict:
         """Update contacts
 
         Args:
