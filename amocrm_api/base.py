@@ -68,7 +68,7 @@ class BaseClient(object):
         return self._send_api_request('get', url)
 
     def _link_entities(self, entity: str, entity_id: int, objects: list) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/links'
+        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/link'
         return self._send_api_request('post', url, objects)
 
     def _unlink_entities(self, entity: str, entity_id: int, objects: list) -> dict:
@@ -91,7 +91,7 @@ class BaseClient(object):
         return self._link_entities('leads', entity_id, objects)
 
     def link_contacts_entity(self, entity_id: int, objects: list) -> dict:
-        return self._link_entities('contcats', entity_id, objects)
+        return self._link_entities('contacts', entity_id, objects)
 
     def link_companies_entity(self, entity_id: int, objects: list) -> dict:
         return self._link_entities('companies', entity_id, objects)
@@ -1716,7 +1716,7 @@ class BaseClient(object):
         return self._create_or_update_entities('contacts', contacts)
 
     def update_conctacts(self, contacts: list) -> dict:
-        """Update contcats
+        """Update contacts
 
         Args:
             contacts (list): list of contacts object
