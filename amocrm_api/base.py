@@ -40,6 +40,29 @@ class BaseClient(object):
         except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
             raise AmoException({'error': str(e)}, code=500)
 
+    def __create_filter_query(self, filters: dict) -> dict:
+        filter_query = {}
+        update_from = filters.pop('updated_at__from', None)
+        update_to = filters.pop('updated_at__to', None)
+        created_from = filters.pop('created_at__from', None)
+        created_to = filters.pop('created_at__to', None)
+        closed_from = filters.pop('closed_at__from', None)
+        closed_to = filters.pop('closed_at__to', None)
+        if update_from:
+            filter_query['filter[updated_at][from]'] = update_from
+        if update_to:
+            filter_query['filter[updated_at][to]'] = update_to
+        if created_from:
+            filter_query['filter[created_at][from]'] = created_from
+        if created_to:
+            filter_query['filter[created_at][to]'] = created_to
+        if closed_from:
+            filter_query['filter[closed_at][from]'] = closed_from
+        if closed_to:
+            filter_query['filter[closed_at][to]'] = created_to
+        filter_query.update({f'filter[{k}]': v for k, v in filters.items()})
+        return filter_query
+
     def _get_entities(
         self,
         entity: str,
@@ -54,10 +77,10 @@ class BaseClient(object):
         if with_params:
             params['with'] = ','.join(param for param in with_params)
         if filters:
-            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
+            filter_query = self.__create_filter_query(filters)
             params.update(filter_query)
         if order:
-            order_query = {f'order[k]': v for k, v in order.items()}
+            order_query = {f'order[{k}]': v for k, v in order.items()}
             params.update(order_query)
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
@@ -972,7 +995,7 @@ class BaseClient(object):
             params['filter[created_at][to]'] = created_at__to
         if pipeline_id:
             params['filter[pipeline_id]'] = pipeline_id
-        url = f'{url}?{urlencode(params)}'
+        url = f'{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}'
         return self._send_api_request('get', url)
 
     def get_pipelines(self) -> dict:
