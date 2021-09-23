@@ -644,7 +644,7 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/unsorted'
+        url = f'{self.crm_url}/api/v4/leads/unsorted'
         params = {'limit': limit, 'page': page}
         if filter_by_uids:
             params['filter[uid]'] = filter_by_uids
@@ -711,7 +711,7 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/unsorted/{uid}'
+        url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}'
         return self._send_api_request('get', url)
 
     def _create_unsorted(
