@@ -3653,6 +3653,7 @@ class BaseClient(object):
 
     def get_event(
             self,
+            id: int,
             with_params: Optional[list] = None,
         ) -> dict:
         """ Get event
