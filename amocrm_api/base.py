@@ -1,12 +1,14 @@
 from json import JSONDecodeError, loads
 from requests import Session, ConnectionError, ConnectTimeout, Response
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from urllib.parse import urlencode
 
 from .errors import AmoException
 
 
 class BaseClient(object):
+    crm_url: str = ''
+
     def _init_session(self, headers: Optional[dict] = None) -> Session:
         raise NotImplementedError()
 
@@ -25,9 +27,7 @@ class BaseClient(object):
         data = loads(raw_data)
         return data
 
-    def _send_api_request(
-        self, method: str, url: str, data: Optional[dict] = None
-    ) -> dict:
+    def _send_api_request(self, method: str, url: str, data: Any = None) -> dict:
         try:
             response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
@@ -73,7 +73,7 @@ class BaseClient(object):
         order: Optional[dict] = None,
     ) -> dict:
         url = f'{self.crm_url}/api/v4/{entity}'
-        params = {'limit': limit, 'page': page}
+        params: dict = {'limit': limit, 'page': page}
         if with_params:
             params['with'] = ','.join(param for param in with_params)
         if filters:
@@ -563,7 +563,7 @@ class BaseClient(object):
             }
         }
         """
-        params = {k: v for k, v in locals().items() if k != 'self'}
+        params: dict = {k: v for k, v in locals().items() if k != 'self'}
         return self._get_entities('leads', **params)
 
     def get_unsorted_leads(
@@ -645,7 +645,7 @@ class BaseClient(object):
             }
         """
         url = f'{self.crm_url}/api/v4/leads/unsorted'
-        params = {'limit': limit, 'page': page}
+        params: dict = {'limit': limit, 'page': page}
         if filter_by_uids:
             params['filter[uid]'] = filter_by_uids
         if filter_by_category:
@@ -655,6 +655,8 @@ class BaseClient(object):
         if order_by:
             orders = {f'order[{key}]': value for key, value in order_by.items()}
         url = f'{url}?{urlencode(params)}'
+        if orders:
+            url = f'{url}&{urlencode(orders)}'
         return self._send_api_request('get', url)
 
     def get_unsorted_by_uid(self, uid: str) -> dict:
@@ -783,8 +785,8 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm}/api/v4/leads/unsorted/{entity}'
-        params = {
+        url = f'{self.crm_url}/api/v4/leads/unsorted/{entity}'
+        params: dict = {
             'source_uid': source_uid,
             'source_name': source_name,
             'metadata': metadata,
@@ -815,7 +817,7 @@ class BaseClient(object):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-sip
         """
-        params = {k: v for k, v in locals() if k != 'self'}
+        params: dict = {k: v for k, v in locals().items() if k != 'self'}
         return self._create_unsorted(entity='sip', **params)
 
     def create_unsorted_by_form(
@@ -833,7 +835,7 @@ class BaseClient(object):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
         """
-        params = {k: v for k, v in locals().items() if k != 'self'}
+        params: dict = {k: v for k, v in locals().items() if k != 'self'}
         return self._create_unsorted(entity='form', **params)
 
     def accept_unsorted(self, uid: str, user_id: int, status_id: int) -> dict:
@@ -1928,7 +1930,7 @@ class BaseClient(object):
             }
         """
         url = f'{self.crm_url}/api/v4/companies'
-        return self._send_api_request('post', companies)
+        return self._send_api_request('post', url, companies)
 
     def update_companies(self, companies: list) -> dict:
         """Update companies
@@ -1960,7 +1962,7 @@ class BaseClient(object):
             }
         """
         url = f'{self.crm_url}/api/v4/companies'
-        return self._send_api_request('post', companies, True)
+        return self._send_api_request('post', url, companies)
 
     def get_catalogs(self, page: int = 1, limit: int = 250) -> dict:
         """Get catalogs
@@ -2049,7 +2051,7 @@ class BaseClient(object):
                 }
             }
         """
-        params = {'page': page, 'limit': limit}
+        params: dict = {'page': page, 'limit': limit}
         return self._get_entities('catalogs', **params)
 
     def get_catalog(self, catalog_id: int) -> dict:
@@ -2252,7 +2254,7 @@ class BaseClient(object):
                 }
             }
         """
-        params = {'page': page, 'limit': limit, 'filters': filters}
+        params: dict = {'page': page, 'limit': limit, 'filters': filters}
         entity = f'catalogs/{catalog_id}/elements'
         return self._get_entities(entity, **params)
 
@@ -3277,7 +3279,7 @@ class BaseClient(object):
                 }
             }
         """
-        params = {'page': page, 'limit': limit, 'filters': filters}
+        params: dict = {'page': page, 'limit': limit, 'filters': filters}
         return self._get_entities(f'{entity_type}/tags', **params)
 
     def add_tags_for_entity_type(self, entity_type: str, tags: list) -> dict:
@@ -3390,11 +3392,6 @@ class BaseClient(object):
 
     def get_customers_custom_field(self, custom_field_id: int) -> dict:
         return self._get_custom_field_by_entity_type('customers', custom_field_id)
-
-    def get_customers_segments_custom_field(self, custom_field_id: int) -> dict:
-        return self._get_custom_field_by_entity_type(
-            'customers/segments', custom_field_id
-        )
 
     def get_customers_segments_custom_field(self, custom_field_id: int) -> dict:
         return self._get_custom_field_by_entity_type(
@@ -3551,12 +3548,9 @@ class BaseClient(object):
         self, catalog_id: int, custom_fields: list
     ) -> dict:
         return self._update_custom_fields(f'catalogs/{catalog_id}', custom_fields)
-    
-    def get_events_type(
-        self,
-        language_code: Optional[str] = None,
-    ) -> dict:
-        params = {'language_code':language_code}
+
+    def get_events_type(self, language_code: Optional[str] = None,) -> dict:
+        params = {'language_code': language_code}
         url = f'{self.crm_url}/api/v4/events/types?{urlencode(params)}'
         return self._send_api_request('get', url)
 
@@ -3565,23 +3559,30 @@ class BaseClient(object):
         page: int = 1,
         limit: int = 250,
         with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
         filter_by_ids: Union[str, list, None] = None,
         filter_by_created_from: Union[str, list, None] = None,
         filter_by_created_to: Union[str, list, None] = None,
         filter_by_created_by: Union[str, list, None] = None,
         filter_by_entity: Union[str, list, None] = None,
         filter_by_entity_id: Union[str, list, None] = None,
-        filter_by_type: Union[str, list, None] = None
+        filter_by_type: Union[str, list, None] = None,
     ) -> dict:
-        """ Get event
+        """ Get events
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-list
         Args:
-            limit (int, optional): limit of page. Defaults to 250.
-            page (int, optional): page index. Defaults to 1.
-            with_params (Optional[list], optional): with params(check dock). Defaults to None.
-            filters (Optional[dict], optional): dict filters like({'[updated_at][from]: "<timestamp>"'}). Defaults to None.
-        Returns: {
+            page (int, optional): page number. Defaults to 1.
+            limit (int, optional): limit per page. Defaults to 250.
+            with_params (Optional[list], optional): with params in doc. Defaults to None.
+            filter_by_ids (Union[str, list, None], optional): ids filter. Defaults to None.
+            filter_by_created_from (Union[str, list, None], optional): createdfrom. Defaults to None.
+            filter_by_created_to (Union[str, list, None], optional): created to. Defaults to None.
+            filter_by_created_by (Union[str, list, None], optional): created by. Defaults to None.
+            filter_by_entity (Union[str, list, None], optional): by entity. Defaults to None.
+            filter_by_entity_id (Union[str, list, None], optional): by entity_id. Defaults to None.
+            filter_by_type (Union[str, list, None], optional): by type. Defaults to None.
+
+        Returns:
+            dict: {
                 "_page": 1,
                 "_links": {
                     "self": {
@@ -3630,11 +3631,11 @@ class BaseClient(object):
             }
         """
         url = f'{self.crm_url}/api/v4/events'
-        params = {'limit': limit, 'page': page}
+        params: dict = {'limit': limit, 'page': page}
         if with_params:
             params['with'] = ','.join(param for param in with_params)
         if filter_by_ids:
-            params['filter[id]'] = filter_by_uids
+            params['filter[id]'] = filter_by_ids
         if filter_by_created_from:
             params['filter[created_at][from]'] = filter_by_created_from
         if filter_by_created_to:
@@ -3651,14 +3652,11 @@ class BaseClient(object):
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
-    def get_event(
-            self,
-            id: int,
-            with_params: Optional[list] = None,
-        ) -> dict:
+    def get_event(self, id: int, with_params: Optional[list] = None,) -> dict:
         """ Get event
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-detail
         Args:
+            id (int): event id.
             with_params (Optional[list], optional): with params(check dock). Defaults to None.
         Returns: {
                 "id": "01pz58t6p04ymgsgfbmfyfy1mf",

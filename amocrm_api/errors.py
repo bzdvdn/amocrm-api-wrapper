@@ -1,5 +1,5 @@
 class AmoException(Exception):
-    def __init__(self, error_data: dict, code: int, *args):
+    def __init__(self, error_data: dict, code: int = 500, *args):
         self.error_data = error_data
         self.code = code
         super().__init__(args)

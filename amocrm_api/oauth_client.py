@@ -27,10 +27,12 @@ class AmoOAuthClient(BaseClient):
 
     def _init_session(self, params: Optional[dict] = None) -> Session:
         session = Session()
-        session.headers = {
-            'Authorization': f'Bearer {self.access_token}',
-            'User-Agent': 'amocrm-api-client/1.0',
-        }
+        session.headers.update(
+            {
+                'Authorization': f'Bearer {self.access_token}',
+                'User-Agent': 'amocrm-api-client/1.0',
+            }
+        )
         if params:
             session.headers.update(params)
         return session
