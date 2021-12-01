@@ -1210,3 +1210,7 @@ customers_cf = client.update_customers_custom_field(['<cf>'])
 customer_segments_cf = client.update_customer_segments_custom_field(['<cf>'])
 get_catalog_custom_fields = client.update_catalog_custom_field('<catalog_id>', ['<cf>'])
 ```
+
+### changelog
+
+- 0.0.12 - add entity notes methods, rename updatecustomers_segments_custom_fields -> update_customers_segments_custom_fields
