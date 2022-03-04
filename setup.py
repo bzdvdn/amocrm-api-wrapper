@@ -1,4 +1,4 @@
-from os import path
+# from os import path
 from io import open
 from setuptools import setup, find_packages
 
@@ -9,9 +9,11 @@ def read(f):
 
 setup(
     name="amocrm-api-wrapper",
-    version='0.0.12',
+    version='0.0.13',
     packages=find_packages(exclude=("tests",)),
-    install_requires=["requests",],
+    install_requires=[
+        "requests",
+    ],
     description="Amocrm api wrapper v4",
     author="bzdvdn",
     author_email="bzdv.dn@gmail.com",

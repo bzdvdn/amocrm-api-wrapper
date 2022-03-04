@@ -75,7 +75,7 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/{entity}'
         params: dict = {'limit': limit, 'page': page}
         if with_params:
-            params['with'] = ','.join(param for param in with_params)
+            params['with'] = ','.join(param for param in with_params)  # type: ignore
         if filters:
             filter_query = self.__create_filter_query(filters)
             params.update(filter_query)
@@ -155,7 +155,7 @@ class BaseClient(object):
         with_datetime_settings: bool = False,
     ) -> dict:
         """
-        Doc: https://www.amocrm.ru/developers/content/crm_platform/account-info    
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/account-info
         Args:
             with_amojo_id (bool, optional): . Defaults to False.
             with_amojo_rights (bool, optional): . Defaults to False.
@@ -646,12 +646,13 @@ class BaseClient(object):
         """
         url = f'{self.crm_url}/api/v4/leads/unsorted'
         params: dict = {'limit': limit, 'page': page}
+        orders = {}
         if filter_by_uids:
-            params['filter[uid]'] = filter_by_uids
+            params['filter[uid]'] = filter_by_uids  # type: ignore
         if filter_by_category:
-            params['filter[category]'] = filter_by_category
+            params['filter[category]'] = filter_by_category  # type: ignore
         if filter_by_pipeline_id:
-            params['filter[pipeline_id]'] = filter_by_pipeline_id
+            params['filter[pipeline_id]'] = filter_by_pipeline_id  # type: ignore
         if order_by:
             orders = {f'order[{key}]': value for key, value in order_by.items()}
         url = f'{url}?{urlencode(params)}'
@@ -797,9 +798,9 @@ class BaseClient(object):
         if request_id:
             params['request_id'] = request_id
         if pipeline_id:
-            params['pipeline_id'] = pipeline_id
+            params['pipeline_id'] = pipeline_id  # type: ignore
         if created_at:
-            params['created_at'] = created_at
+            params['created_at'] = created_at  # type: ignore
         return self._send_api_request('post', url, [params])
 
     def create_unsorted_by_sip(
@@ -2650,7 +2651,10 @@ class BaseClient(object):
         return self._send_api_request('get', url)
 
     def get_user(
-        self, user_id: int, with_role: bool = False, with_group: bool = False,
+        self,
+        user_id: int,
+        with_role: bool = False,
+        with_group: bool = False,
     ) -> dict:
         """Get user
         Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
@@ -2821,7 +2825,7 @@ class BaseClient(object):
         """
         url = f'{self.crm_url}/api/v4/webhooks'
         params = {'destination': destination, 'settings': settings}
-        return self._send_api_request('post', url)
+        return self._send_api_request('post', url, data=params)
 
     def unsubscribe_webhook(self):
         """
@@ -3454,7 +3458,7 @@ class BaseClient(object):
         }
         """
         url = f'{self.crm_url}/{entity_type}/custom_fields/'
-        return self._send_api_request('post', url,)
+        return self._send_api_request('post', url)
 
     def create_leads_custom_fields(self, custom_fields: list) -> dict:
         return self._create_custom_fields('leads', custom_fields)
@@ -3549,7 +3553,10 @@ class BaseClient(object):
     ) -> dict:
         return self._update_custom_fields(f'catalogs/{catalog_id}', custom_fields)
 
-    def get_events_type(self, language_code: Optional[str] = None,) -> dict:
+    def get_events_type(
+        self,
+        language_code: Optional[str] = None,
+    ) -> dict:
         """get events types
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-types
 
@@ -3598,7 +3605,7 @@ class BaseClient(object):
         filter_by_entity_id: Union[str, list, None] = None,
         filter_by_type: Union[str, list, None] = None,
     ) -> dict:
-        """ Get events
+        """Get events
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-list
         Args:
             page (int, optional): page number. Defaults to 1.
@@ -3664,27 +3671,31 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/events'
         params: dict = {'limit': limit, 'page': page}
         if with_params:
-            params['with'] = ','.join(param for param in with_params)
+            params['with'] = ','.join(param for param in with_params)  # type: ignore
         if filter_by_ids:
-            params['filter[id]'] = filter_by_ids
+            params['filter[id]'] = filter_by_ids  # type: ignore
         if filter_by_created_from:
-            params['filter[created_at][from]'] = filter_by_created_from
+            params['filter[created_at][from]'] = filter_by_created_from  # type: ignore
         if filter_by_created_to:
-            params['filter[created_at][to]'] = filter_by_created_to
+            params['filter[created_at][to]'] = filter_by_created_to  # type: ignore
         if filter_by_created_by:
-            params['filter[created_by][]'] = filter_by_created_by
+            params['filter[created_by][]'] = filter_by_created_by  # type: ignore
         if filter_by_entity:
-            params['filter[entity][]'] = filter_by_entity
+            params['filter[entity][]'] = filter_by_entity  # type: ignore
         if filter_by_entity_id:
-            params['filter[entity_id][]'] = filter_by_entity_id
+            params['filter[entity_id][]'] = filter_by_entity_id  # type: ignore
         if filter_by_type:
-            params['filter[type]'] = filter_by_type
+            params['filter[type]'] = filter_by_type  # type: ignore
 
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
 
-    def get_event(self, id: int, with_params: Optional[list] = None,) -> dict:
-        """ Get event
+    def get_event(
+        self,
+        id: int,
+        with_params: Optional[list] = None,
+    ) -> dict:
+        """Get event
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-detail
         Args:
             id (int): event id.
@@ -3744,7 +3755,7 @@ class BaseClient(object):
         order_by_updated_at: str = 'asc',
         order_by_id: str = 'asc',
     ) -> dict:
-        """ Get notes by event type
+        """Get notes by event type
 
         Args:
             entity_type (str): entity type
@@ -3820,21 +3831,21 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/{entity_type}/notes'
         params: dict = {'page': page, 'limit': limit}
         if filter_by_id:
-            params['filter[id]'] = filter_by_id
+            params['filter[id]'] = filter_by_id  # type: ignore
         if filter_by_note_type:
-            params['filter[note_type]'] = filter_by_note_type
+            params['filter[note_type]'] = filter_by_note_type  # type: ignore
         if filter_by_entity_id:
-            params['filter[entity_id]'] = filter_by_entity_id
+            params['filter[entity_id]'] = filter_by_entity_id  # type: ignore
         if filter_by_updated_at:
-            params['filter[updated_at]'] = filter_by_updated_at
+            params['filter[updated_at]'] = filter_by_updated_at  # type: ignore
         if filter_by_updated_at_from:
             params['filter[updated_at][from]'] = filter_by_updated_at_from
         if filter_by_updated_at_to:
             params['filter[updated_at][to]'] = filter_by_updated_at_to
         if order_by_updated_at:
-            params['order[updated_at]'] = order_by_updated_at
+            params['order[updated_at]'] = order_by_updated_at  # type: ignore
         if order_by_id:
-            params['order[id]'] = order_by_id
+            params['order[id]'] = order_by_id  # type: ignore
 
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
@@ -3853,7 +3864,7 @@ class BaseClient(object):
         order_by_updated_at: str = 'asc',
         order_by_id: str = 'asc',
     ) -> dict:
-        """ Get notes by event type and entity id
+        """Get notes by event type and entity id
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-entity-list
         Args:
             entity_type (str): entity type
@@ -3929,19 +3940,19 @@ class BaseClient(object):
         url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
         params: dict = {'page': page, 'limit': limit}
         if filter_by_id:
-            params['filter[id]'] = filter_by_id
+            params['filter[id]'] = filter_by_id  # type: ignore
         if filter_by_note_type:
-            params['filter[note_type]'] = filter_by_note_type
+            params['filter[note_type]'] = filter_by_note_type  # type: ignore
         if filter_by_updated_at:
-            params['filter[updated_at]'] = filter_by_updated_at
+            params['filter[updated_at]'] = filter_by_updated_at  # type: ignore
         if filter_by_updated_at_from:
             params['filter[updated_at][from]'] = filter_by_updated_at_from
         if filter_by_updated_at_to:
             params['filter[updated_at][to]'] = filter_by_updated_at_to
         if order_by_updated_at:
-            params['order[updated_at]'] = order_by_updated_at
+            params['order[updated_at]'] = order_by_updated_at  # type: ignore
         if order_by_id:
-            params['order[id]'] = order_by_id
+            params['order[id]'] = order_by_id  # type: ignore
 
         url = f'{url}?{urlencode(params)}'
         return self._send_api_request('get', url)
@@ -4100,7 +4111,10 @@ class BaseClient(object):
         return self._send_api_request('patch', url, params)
 
     def update_entity_many_notes(
-        self, entity_type: str, notes: list, entity_id: Optional[int] = None,
+        self,
+        entity_type: str,
+        notes: list,
+        entity_id: Optional[int] = None,
     ) -> dict:
         """update many entity note
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-edit
