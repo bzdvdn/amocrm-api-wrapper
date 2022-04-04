@@ -1,9 +1,13 @@
+import logging
 from json import JSONDecodeError, loads
+from time import sleep
 from requests import Session, ConnectionError, ConnectTimeout, Response
 from typing import Optional, Union, Any
 from urllib.parse import urlencode
 
 from .errors import AmoException
+
+logger = logging.getLogger('amocrm_wrapper')
 
 
 class BaseClient(object):
@@ -32,6 +36,10 @@ class BaseClient(object):
             response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
                 return {}
+            elif response.status_code == 429:
+                sleep(20)
+                logger.warning('429 http error, sleep 20 sec')
+                return self._send_api_request(method, url, data)
             data = self._parse_response_body(response)
             if 'error' in data or response.status_code >= 400:
                 raise AmoException(data, code=response.status_code)
