@@ -3325,7 +3325,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities(f'{entity_type}/tags/', tags)
+        return self._create_or_update_entities(f'{entity_type}/tags', tags)
 
     def _get_custom_field_by_entity_type(
         self, entity_type: str, custom_field_id: int
@@ -3465,8 +3465,8 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/{entity_type}/custom_fields/'
-        return self._send_api_request('post', url)
+        url = f'{self.crm_url}/{entity_type}/custom_fields'
+        return self._send_api_request('post', url, custom_fields)
 
     def create_leads_custom_fields(self, custom_fields: list) -> dict:
         return self._create_custom_fields('leads', custom_fields)
@@ -3538,7 +3538,7 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/{entity_type}/custom_fields/'
+        url = f'{self.crm_url}/{entity_type}/custom_fields'
         return self._send_api_request('patch', url, custom_fields)
 
     def update_leads_custom_fields(self, custom_fields: list) -> dict:
@@ -4067,9 +4067,9 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
         return self._send_api_request('post', url, data=notes)
 
     def update_entity_note(
@@ -4165,7 +4165,7 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
         return self._send_api_request('patch', url, data=notes)
