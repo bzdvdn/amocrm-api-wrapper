@@ -4067,9 +4067,9 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
         return self._send_api_request('post', url, data=notes)
 
     def update_entity_note(
@@ -4165,7 +4165,7 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes/'
+            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
         return self._send_api_request('patch', url, data=notes)
