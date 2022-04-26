@@ -31,7 +31,9 @@ class BaseClient(object):
         data = loads(raw_data)
         return data
 
-    def _send_api_request(self, method: str, url: str, data: Any = None) -> dict:
+    def _send_api_request(
+        self, method: str, url: str, data: Any = None, _connection_counter: int = 0
+    ) -> dict:
         try:
             response = self._session.__getattribute__(method)(url, json=data)
             if response.status_code == 204:
@@ -45,8 +47,18 @@ class BaseClient(object):
                 raise AmoException(data, code=response.status_code)
             json_data = data['response'] if 'response' in data else data
             return json_data
-        except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
+        except JSONDecodeError as e:
             raise AmoException({'error': str(e)}, code=500)
+        except (ConnectTimeout, ConnectionError) as e:
+            if _connection_counter > 3:
+                raise
+            sleep(5)
+            self._update_session()
+            _connection_counter += 1
+            return self._send_api_request(method, url, data, _connection_counter)
+
+    def _update_session(self):
+        self._session = self._init_session(dict(self._session.headers))
 
     def __create_filter_query(self, filters: dict) -> dict:
         filter_query = {}
