@@ -2468,24 +2468,26 @@ class BaseClient(object):
             f'catalogs/{catalog_id}/elements', elements, True
         )
 
-    def _get_custom_fields(self, entity: str) -> dict:
+    def _get_custom_fields(self, entity: str, page: Optional[int] = None) -> dict:
         url = f'{self.crm_url}/api/v4/{entity}/custom_fields'
+        if page:
+            url = f'{url}?page={page}'
         return self._send_api_request('get', url)
 
-    def get_contacts_custom_fields(self) -> dict:
-        return self._get_custom_fields('contacts')
+    def get_contacts_custom_fields(self, page: Optional[int] = None) -> dict:
+        return self._get_custom_fields('contacts', page=page)
 
-    def get_leads_custom_fields(self) -> dict:
-        return self._get_custom_fields('leads')
+    def get_leads_custom_fields(self, page: Optional[int] = None) -> dict:
+        return self._get_custom_fields('leads', page=page)
 
-    def get_companies_custom_fields(self) -> dict:
-        return self._get_custom_fields('companies')
+    def get_companies_custom_fields(self, page: Optional[int] = None) -> dict:
+        return self._get_custom_fields('companies', page=page)
 
-    def get_customers_custom_fields(self) -> dict:
-        return self._get_custom_fields('customers')
+    def get_customers_custom_fields(self, page: Optional[int] = None) -> dict:
+        return self._get_custom_fields('customers', page=page)
 
-    def get_customer_segments_custom_fields(self) -> dict:
-        return self._get_custom_fields('customers/segments')
+    def get_customer_segments_custom_fields(self, page: Optional[int] = None) -> dict:
+        return self._get_custom_fields('customers/segments', page=page)
 
     def get_catalog_custom_fields(self, catalog_id: str) -> dict:
         return self._get_custom_fields(f'catalogs/{catalog_id}')
