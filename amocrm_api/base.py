@@ -7,11 +7,11 @@ from urllib.parse import urlencode
 
 from .errors import AmoException
 
-logger = logging.getLogger('amocrm_wrapper')
+logger = logging.getLogger("amocrm_wrapper")
 
 
 class BaseClient(object):
-    crm_url: str = ''
+    crm_url: str = ""
 
     def _init_session(self, headers: Optional[dict] = None) -> Session:
         raise NotImplementedError()
@@ -25,7 +25,7 @@ class BaseClient(object):
         self._session = self._init_session(params)
 
     def _parse_response_body(self, response: Response) -> dict:
-        raw_data = response.content.decode('utf-8')
+        raw_data = response.content.decode("utf-8")
         if not raw_data:
             return {}
         data = loads(raw_data)
@@ -40,15 +40,15 @@ class BaseClient(object):
                 return {}
             elif response.status_code == 429:
                 sleep(20)
-                logger.warning('429 http error, sleep 20 sec')
+                logger.warning("429 http error, sleep 20 sec")
                 return self._send_api_request(method, url, data)
             data = self._parse_response_body(response)
-            if 'error' in data or response.status_code >= 400:
+            if "error" in data or response.status_code >= 400:
                 raise AmoException(data, code=response.status_code)
-            json_data = data['response'] if 'response' in data else data
+            json_data = data["response"] if "response" in data else data
             return json_data
         except JSONDecodeError as e:
-            raise AmoException({'error': str(e)}, code=500)
+            raise AmoException({"error": str(e)}, code=500)
         except (ConnectTimeout, ConnectionError) as e:
             if _connection_counter > 3:
                 raise
@@ -62,25 +62,25 @@ class BaseClient(object):
 
     def __create_filter_query(self, filters: dict) -> dict:
         filter_query = {}
-        update_from = filters.pop('updated_at__from', None)
-        update_to = filters.pop('updated_at__to', None)
-        created_from = filters.pop('created_at__from', None)
-        created_to = filters.pop('created_at__to', None)
-        closed_from = filters.pop('closed_at__from', None)
-        closed_to = filters.pop('closed_at__to', None)
+        update_from = filters.pop("updated_at__from", None)
+        update_to = filters.pop("updated_at__to", None)
+        created_from = filters.pop("created_at__from", None)
+        created_to = filters.pop("created_at__to", None)
+        closed_from = filters.pop("closed_at__from", None)
+        closed_to = filters.pop("closed_at__to", None)
         if update_from:
-            filter_query['filter[updated_at][from]'] = update_from
+            filter_query["filter[updated_at][from]"] = update_from
         if update_to:
-            filter_query['filter[updated_at][to]'] = update_to
+            filter_query["filter[updated_at][to]"] = update_to
         if created_from:
-            filter_query['filter[created_at][from]'] = created_from
+            filter_query["filter[created_at][from]"] = created_from
         if created_to:
-            filter_query['filter[created_at][to]'] = created_to
+            filter_query["filter[created_at][to]"] = created_to
         if closed_from:
-            filter_query['filter[closed_at][from]'] = closed_from
+            filter_query["filter[closed_at][from]"] = closed_from
         if closed_to:
-            filter_query['filter[closed_at][to]'] = created_to
-        filter_query.update({f'filter[{k}]': v for k, v in filters.items()})
+            filter_query["filter[closed_at][to]"] = created_to
+        filter_query.update({f"filter[{k}]": v for k, v in filters.items()})
         return filter_query
 
     def _get_entities(
@@ -90,79 +90,83 @@ class BaseClient(object):
         page: int = 1,
         with_params: Optional[list] = None,
         filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
         order: Optional[dict] = None,
     ) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}'
-        params: dict = {'limit': limit, 'page': page}
+        url = f"{self.crm_url}/api/v4/{entity}"
+        params: dict = {"limit": limit, "page": page}
         if with_params:
-            params['with'] = ','.join(param for param in with_params)  # type: ignore
+            params["with"] = ",".join(param for param in with_params)  # type: ignore
         if filters:
             filter_query = self.__create_filter_query(filters)
             params.update(filter_query)
+        if filter_ids:
+            query = {f'filter[id][{index}]': id_ for index, id_ in enumerate(filter_ids)}
+            params.update(query)
         if order:
-            order_query = {f'order[{k}]': v for k, v in order.items()}
+            order_query = {f"order[{k}]": v for k, v in order.items()}
             params.update(order_query)
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def _get_entity_links(
         self, entity: str, entity_id: int, filters: Optional[dict] = None
     ) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/links'
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
         if filters:
-            filter_query = {f'filter[{k}]': v for k, v in filters.items()}
-            url = f'{url}?{urlencode(filter_query)}'
-        return self._send_api_request('get', url)
+            filter_query = {f"filter[{k}]": v for k, v in filters.items()}
+            url = f"{url}?{urlencode(filter_query)}"
+        return self._send_api_request("get", url)
 
     def _link_entities(self, entity: str, entity_id: int, objects: list) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/link'
-        return self._send_api_request('post', url, objects)
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/link"
+        return self._send_api_request("post", url, objects)
 
     def _unlink_entities(self, entity: str, entity_id: int, objects: list) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks'
-        return self._send_api_request('post', url, objects)
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks"
+        return self._send_api_request("post", url, objects)
 
     def unlink_leads_entity(self, entity_id: int, objects: list) -> dict:
-        return self._unlink_entities('leads', entity_id, objects)
+        return self._unlink_entities("leads", entity_id, objects)
 
     def unlink_contacts_entity(self, entity_id: int, objects: list) -> dict:
-        return self._unlink_entities('contacts', entity_id, objects)
+        return self._unlink_entities("contacts", entity_id, objects)
 
     def unlink_customers_entity(self, entity_id: int, objects: list) -> dict:
-        return self._unlink_entities('customers', entity_id, objects)
+        return self._unlink_entities("customers", entity_id, objects)
 
     def unlink_companies_entity(self, entity_id: int, objects: list) -> dict:
-        return self._unlink_entities('companies', entity_id, objects)
+        return self._unlink_entities("companies", entity_id, objects)
 
     def link_leads_entity(self, entity_id: int, objects: list) -> dict:
-        return self._link_entities('leads', entity_id, objects)
+        return self._link_entities("leads", entity_id, objects)
 
     def link_contacts_entity(self, entity_id: int, objects: list) -> dict:
-        return self._link_entities('contacts', entity_id, objects)
+        return self._link_entities("contacts", entity_id, objects)
 
     def link_companies_entity(self, entity_id: int, objects: list) -> dict:
-        return self._link_entities('companies', entity_id, objects)
+        return self._link_entities("companies", entity_id, objects)
 
     def link_customers_entity(self, entity_id: int, objects: list) -> dict:
-        return self._link_entities('customers', entity_id, objects)
+        return self._link_entities("customers", entity_id, objects)
 
     def get_leads_links(self, entity_id: int, filters: Optional[dict] = None) -> dict:
-        return self._get_entity_links('leads', entity_id, filters)
+        return self._get_entity_links("leads", entity_id, filters)
 
     def get_contacts_links(
         self, entity_id: int, filters: Optional[dict] = None
     ) -> dict:
-        return self._get_entity_links('contacts', entity_id, filters)
+        return self._get_entity_links("contacts", entity_id, filters)
 
     def get_companies_links(
         self, entity_id: int, filters: Optional[dict] = None
     ) -> dict:
-        return self._get_entity_links('companies', entity_id, filters)
+        return self._get_entity_links("companies", entity_id, filters)
 
     def get_customers_links(
         self, entity_id: int, filters: Optional[dict] = None
     ) -> dict:
-        return self._get_entity_links('customers', entity_id, filters)
+        return self._get_entity_links("customers", entity_id, filters)
 
     def get_account_info(
         self,
@@ -291,11 +295,11 @@ class BaseClient(object):
                 }
                 }
         """
-        params = {k.replace('with_', ''): v for k, v in locals().items() if k != 'self'}
+        params = {k.replace("with_", ""): v for k, v in locals().items() if k != "self"}
         with_params = [param for param, value in params.items() if value]
-        url = f'{self.crm_url}/api/v4/account'
-        url += '?with=' + ','.join(p for p in with_params)
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/account"
+        url += "?with=" + ",".join(p for p in with_params)
+        return self._send_api_request("get", url)
 
     def _create_or_update_entities(
         self, entity: str, objects: list, update: bool = False
@@ -310,8 +314,8 @@ class BaseClient(object):
         Returns:
             dict: query result
         """
-        url = f'{self.crm_url}/api/v4/{entity}'
-        http_method = 'patch' if update else 'post'
+        url = f"{self.crm_url}/api/v4/{entity}"
+        http_method = "patch" if update else "post"
         return self._send_api_request(http_method, url, objects)
 
     def create_leads(self, objects: list) -> dict:
@@ -351,7 +355,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('leads', objects)
+        return self._create_or_update_entities("leads", objects)
 
     def update_leads(self, objects: list) -> dict:
         """update leads
@@ -391,7 +395,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('leads', objects, True)
+        return self._create_or_update_entities("leads", objects, True)
 
     def get_lead(self, lead_id: int) -> dict:
         """return lead
@@ -480,8 +484,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/{lead_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/leads/{lead_id}"
+        return self._send_api_request("get", url)
 
     def get_leads(
         self,
@@ -489,6 +493,7 @@ class BaseClient(object):
         page: int = 1,
         with_params: Optional[list] = None,
         filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
         order: Optional[dict] = None,
     ) -> dict:
         """Get leads
@@ -498,6 +503,7 @@ class BaseClient(object):
             page (int, optional): number of page. Defaults to 1.
             with_params (Optional[list], optional): params. Defaults to None.
             filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
+            filter_ids (Optional[list], optional): filter ids like [1,2,2310]. Defaults to None.
             order (Optional[dict], optional): order params like {'update_at': 'asc'}. Defaults to None.
 
         Returns:
@@ -583,8 +589,8 @@ class BaseClient(object):
             }
         }
         """
-        params: dict = {k: v for k, v in locals().items() if k != 'self'}
-        return self._get_entities('leads', **params)
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return self._get_entities("leads", **params)
 
     def get_unsorted_leads(
         self,
@@ -664,21 +670,21 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/unsorted'
-        params: dict = {'limit': limit, 'page': page}
+        url = f"{self.crm_url}/api/v4/leads/unsorted"
+        params: dict = {"limit": limit, "page": page}
         orders = {}
         if filter_by_uids:
-            params['filter[uid]'] = filter_by_uids  # type: ignore
+            params["filter[uid]"] = filter_by_uids  # type: ignore
         if filter_by_category:
-            params['filter[category]'] = filter_by_category  # type: ignore
+            params["filter[category]"] = filter_by_category  # type: ignore
         if filter_by_pipeline_id:
-            params['filter[pipeline_id]'] = filter_by_pipeline_id  # type: ignore
+            params["filter[pipeline_id]"] = filter_by_pipeline_id  # type: ignore
         if order_by:
-            orders = {f'order[{key}]': value for key, value in order_by.items()}
-        url = f'{url}?{urlencode(params)}'
+            orders = {f"order[{key}]": value for key, value in order_by.items()}
+        url = f"{url}?{urlencode(params)}"
         if orders:
-            url = f'{url}&{urlencode(orders)}'
-        return self._send_api_request('get', url)
+            url = f"{url}&{urlencode(orders)}"
+        return self._send_api_request("get", url)
 
     def get_unsorted_by_uid(self, uid: str) -> dict:
         """Get unsorted obj by uid
@@ -734,8 +740,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}"
+        return self._send_api_request("get", url)
 
     def _create_unsorted(
         self,
@@ -806,22 +812,22 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/api/v4/leads/unsorted/{entity}'
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{entity}"
         params: dict = {
-            'source_uid': source_uid,
-            'source_name': source_name,
-            'metadata': metadata,
-            'contact': contact,
+            "source_uid": source_uid,
+            "source_name": source_name,
+            "metadata": metadata,
+            "contact": contact,
         }
-        _embedded = {'contacts': [contact], 'leads': [lead], 'companies': [comapany]}
-        params['_embedded'] = _embedded
+        _embedded = {"contacts": [contact], "leads": [lead], "companies": [comapany]}
+        params["_embedded"] = _embedded
         if request_id:
-            params['request_id'] = request_id
+            params["request_id"] = request_id
         if pipeline_id:
-            params['pipeline_id'] = pipeline_id  # type: ignore
+            params["pipeline_id"] = pipeline_id  # type: ignore
         if created_at:
-            params['created_at'] = created_at  # type: ignore
-        return self._send_api_request('post', url, [params])
+            params["created_at"] = created_at  # type: ignore
+        return self._send_api_request("post", url, [params])
 
     def create_unsorted_by_sip(
         self,
@@ -838,8 +844,8 @@ class BaseClient(object):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-sip
         """
-        params: dict = {k: v for k, v in locals().items() if k != 'self'}
-        return self._create_unsorted(entity='sip', **params)
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return self._create_unsorted(entity="sip", **params)
 
     def create_unsorted_by_form(
         self,
@@ -856,8 +862,8 @@ class BaseClient(object):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
         """
-        params: dict = {k: v for k, v in locals().items() if k != 'self'}
-        return self._create_unsorted(entity='form', **params)
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return self._create_unsorted(entity="form", **params)
 
     def accept_unsorted(self, uid: str, user_id: int, status_id: int) -> dict:
         """Accept unsorted
@@ -898,9 +904,9 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}/accept'
-        params = {'user_id': user_id, 'status_id': status_id}
-        return self._send_api_request('post', url, params)
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/accept"
+        params = {"user_id": user_id, "status_id": status_id}
+        return self._send_api_request("post", url, params)
 
     def decline_unsorted(self, uid: str, user_id: int) -> dict:
         """Decline unsorted
@@ -939,9 +945,9 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/unsorted/{uid}/decline'
-        params = {'user_id': user_id}
-        return self._send_api_request('delete', url, params)
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/decline"
+        params = {"user_id": user_id}
+        return self._send_api_request("delete", url, params)
 
     def link_unsorted(self, uid: str, user_id: int, link: dict) -> dict:
         """Link unsorted to another entity
@@ -968,9 +974,9 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}api/v4/leads/unsorted/{uid}/link'
-        params = {'user_id': user_id, 'link': link}
-        return self._send_api_request('post', url, params)
+        url = f"{self.crm_url}api/v4/leads/unsorted/{uid}/link"
+        params = {"user_id": user_id, "link": link}
+        return self._send_api_request("post", url, params)
 
     def get_summary_unsorted(
         self,
@@ -1011,15 +1017,15 @@ class BaseClient(object):
         """
         params = {}
         if uid:
-            params['filter[uid]'] = uid
+            params["filter[uid]"] = uid
         if created_at__from:
-            params['filter[created_at][from]'] = created_at__from
+            params["filter[created_at][from]"] = created_at__from
         if created_at__to:
-            params['filter[created_at][to]'] = created_at__to
+            params["filter[created_at][to]"] = created_at__to
         if pipeline_id:
-            params['filter[pipeline_id]'] = pipeline_id
-        url = f'{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}'
-        return self._send_api_request('get', url)
+            params["filter[pipeline_id]"] = pipeline_id
+        url = f"{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_pipelines(self) -> dict:
         """get leads pipelines
@@ -1131,8 +1137,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/leads/pipelines"
+        return self._send_api_request("get", url)
 
     def get_pipeline(self, pipeline_id: int) -> dict:
         """get leads pipeline
@@ -1232,8 +1238,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
+        return self._send_api_request("get", url)
 
     def create_pipeline(
         self,
@@ -1257,17 +1263,17 @@ class BaseClient(object):
         Returns:
             dict: query result
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines'
+        url = f"{self.crm_url}/api/v4/leads/pipelines"
         params = {
-            'name': name,
-            'sort': sort,
-            'is_main': is_main,
-            '_embedded': {'statuses': statuses},
-            'is_unsorted_on': is_unsorted_on,
+            "name": name,
+            "sort": sort,
+            "is_main": is_main,
+            "_embedded": {"statuses": statuses},
+            "is_unsorted_on": is_unsorted_on,
         }
         if request_id:
-            params['request_id'] = request_id
-        return self._send_api_request('post', url, [params])
+            params["request_id"] = request_id
+        return self._send_api_request("post", url, [params])
 
     def edit_pipeline(
         self,
@@ -1289,14 +1295,14 @@ class BaseClient(object):
         Returns:
             dict: query result
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}'
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
         params = {
-            'name': name,
-            'sort': sort,
-            'is_main': is_main,
-            'is_unsorted_on': is_unsorted_on,
+            "name": name,
+            "sort": sort,
+            "is_main": is_main,
+            "is_unsorted_on": is_unsorted_on,
         }
-        return self._send_api_request('patch', url, params)
+        return self._send_api_request("patch", url, params)
 
     def delete_pipeline(self, pipeline_id: int) -> dict:
         """Delete pipeline
@@ -1307,8 +1313,8 @@ class BaseClient(object):
         Returns:
             dict: query result
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}'
-        return self._send_api_request('delete', url)
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
+        return self._send_api_request("delete", url)
 
     def get_pipeline_statuses(self, pipeline_id: int) -> dict:
         """return pipeline Statuses
@@ -1422,8 +1428,8 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        return self._send_api_request("get", url)
 
     def get_pipeline_status(self, pipeline_id: int, status_id: int) -> dict:
         """Get status
@@ -1450,9 +1456,9 @@ class BaseClient(object):
             }
         """
         url = (
-            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
-        return self._send_api_request('get', url)
+        return self._send_api_request("get", url)
 
     def add_statuses_to_pipeline(self, pipeline_id: int, statuses: list) -> dict:
         """Add status tot pipeline
@@ -1502,8 +1508,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses'
-        return self._send_api_request('post', url, statuses)
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        return self._send_api_request("post", url, statuses)
 
     def edit_pipeline_status(
         self, pipeline_id: int, status_id: int, name: str, sort: int, color: str
@@ -1536,10 +1542,10 @@ class BaseClient(object):
             }
         """
         url = (
-            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
-        params = {'name': name, 'sort': sort, 'color': color}
-        return self._send_api_request('patch', url, params)
+        params = {"name": name, "sort": sort, "color": color}
+        return self._send_api_request("patch", url, params)
 
     def delete_status_from_pipeline(self, pipeline_id: int, status_id: int) -> dict:
         """Delete status from pipeline
@@ -1552,9 +1558,9 @@ class BaseClient(object):
             dict: {}
         """
         url = (
-            f'{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}'
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
-        return self._send_api_request('delete', url)
+        return self._send_api_request("delete", url)
 
     def get_contacts(
         self,
@@ -1637,8 +1643,8 @@ class BaseClient(object):
                 }
             }
         """
-        params = {k: v for k, v in locals().items() if k != 'self'}
-        return self._get_entities('contacts', **params)
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return self._get_entities("contacts", **params)
 
     def get_contact(self, contact_id: int) -> dict:
         """Get contact
@@ -1724,8 +1730,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/contacts/{contact_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/contacts/{contact_id}"
+        return self._send_api_request("get", url)
 
     def create_contacts(self, contacts: list) -> dict:
         """Create contacts
@@ -1763,7 +1769,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('contacts', contacts)
+        return self._create_or_update_entities("contacts", contacts)
 
     def update_contacts(self, contacts: list) -> dict:
         """Update contacts
@@ -1794,8 +1800,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/contacts'
-        return self._create_or_update_entities('contacts', contacts, True)
+        url = f"{self.crm_url}/api/v4/contacts"
+        return self._create_or_update_entities("contacts", contacts, True)
 
     def get_companies(
         self,
@@ -1873,8 +1879,8 @@ class BaseClient(object):
                     }
                 }
         """
-        params = {k: v for k, v in locals().items() if k != 'self'}
-        return self._get_entities('companies', **params)
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return self._get_entities("companies", **params)
 
     def get_company(self, company_id: int) -> dict:
         """Get company
@@ -1919,8 +1925,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/companies/{company_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/companies/{company_id}"
+        return self._send_api_request("get", url)
 
     def create_companies(self, companies: list) -> dict:
         """Create companies
@@ -1950,8 +1956,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/companies'
-        return self._send_api_request('post', url, companies)
+        url = f"{self.crm_url}/api/v4/companies"
+        return self._send_api_request("post", url, companies)
 
     def update_companies(self, companies: list) -> dict:
         """Update companies
@@ -1982,8 +1988,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/companies'
-        return self._send_api_request('post', url, companies)
+        url = f"{self.crm_url}/api/v4/companies"
+        return self._send_api_request("post", url, companies)
 
     def get_catalogs(self, page: int = 1, limit: int = 250) -> dict:
         """Get catalogs
@@ -2072,8 +2078,8 @@ class BaseClient(object):
                 }
             }
         """
-        params: dict = {'page': page, 'limit': limit}
-        return self._get_entities('catalogs', **params)
+        params: dict = {"page": page, "limit": limit}
+        return self._get_entities("catalogs", **params)
 
     def get_catalog(self, catalog_id: int) -> dict:
         """Get catalog
@@ -2104,8 +2110,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/catalogs/{catalog_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/catalogs/{catalog_id}"
+        return self._send_api_request("get", url)
 
     def create_catalogs(self, catalogs: list) -> dict:
         """Create catalogs
@@ -2147,7 +2153,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('catalogs', catalogs)
+        return self._create_or_update_entities("catalogs", catalogs)
 
     def update_catalogs(self, catalogs: list) -> dict:
         """Update catalogs
@@ -2178,7 +2184,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('catalogs', catalogs, True)
+        return self._create_or_update_entities("catalogs", catalogs, True)
 
     def get_catalog_elements(
         self,
@@ -2275,8 +2281,8 @@ class BaseClient(object):
                 }
             }
         """
-        params: dict = {'page': page, 'limit': limit, 'filters': filters}
-        entity = f'catalogs/{catalog_id}/elements'
+        params: dict = {"page": page, "limit": limit, "filters": filters}
+        entity = f"catalogs/{catalog_id}/elements"
         return self._get_entities(entity, **params)
 
     def get_catalog_element(self, catalog_id: int, element_id: int) -> dict:
@@ -2351,8 +2357,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/catalogs/{catalog_id}/elements/{element_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/catalogs/{catalog_id}/elements/{element_id}"
+        return self._send_api_request("get", url)
 
     def add_elements_to_catalog(self, catalog_id: int, elements: list) -> dict:
         """Add elements to catalog
@@ -2405,7 +2411,7 @@ class BaseClient(object):
             }
         """
         return self._create_or_update_entities(
-            f'catalogs/{catalog_id}/elements', elements
+            f"catalogs/{catalog_id}/elements", elements
         )
 
     def update_elements_in_catalog(self, catalog_id: int, elements: list) -> dict:
@@ -2465,32 +2471,32 @@ class BaseClient(object):
             }
         """
         return self._create_or_update_entities(
-            f'catalogs/{catalog_id}/elements', elements, True
+            f"catalogs/{catalog_id}/elements", elements, True
         )
 
     def _get_custom_fields(self, entity: str, page: Optional[int] = None) -> dict:
-        url = f'{self.crm_url}/api/v4/{entity}/custom_fields'
+        url = f"{self.crm_url}/api/v4/{entity}/custom_fields"
         if page:
-            url = f'{url}?page={page}'
-        return self._send_api_request('get', url)
+            url = f"{url}?page={page}"
+        return self._send_api_request("get", url)
 
     def get_contacts_custom_fields(self, page: Optional[int] = None) -> dict:
-        return self._get_custom_fields('contacts', page=page)
+        return self._get_custom_fields("contacts", page=page)
 
     def get_leads_custom_fields(self, page: Optional[int] = None) -> dict:
-        return self._get_custom_fields('leads', page=page)
+        return self._get_custom_fields("leads", page=page)
 
     def get_companies_custom_fields(self, page: Optional[int] = None) -> dict:
-        return self._get_custom_fields('companies', page=page)
+        return self._get_custom_fields("companies", page=page)
 
     def get_customers_custom_fields(self, page: Optional[int] = None) -> dict:
-        return self._get_custom_fields('customers', page=page)
+        return self._get_custom_fields("customers", page=page)
 
     def get_customer_segments_custom_fields(self, page: Optional[int] = None) -> dict:
-        return self._get_custom_fields('customers/segments', page=page)
+        return self._get_custom_fields("customers/segments", page=page)
 
     def get_catalog_custom_fields(self, catalog_id: str) -> dict:
-        return self._get_custom_fields(f'catalogs/{catalog_id}')
+        return self._get_custom_fields(f"catalogs/{catalog_id}")
 
     def get_users(
         self,
@@ -2659,18 +2665,18 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/users'
-        params = {'page': page, 'limit': limit}
+        url = f"{self.crm_url}/api/v4/users"
+        params = {"page": page, "limit": limit}
         with_ = []
         if with_group:
-            with_.append('group')
+            with_.append("group")
         if with_role:
-            with_.append('role')
-        url = f'{url}?{urlencode(params)}'
+            with_.append("role")
+        url = f"{url}?{urlencode(params)}"
         if with_:
-            with_str = ','.join(i for i in with_)
-            url = f'{url}&with={with_str}'
-        return self._send_api_request('get', url)
+            with_str = ",".join(i for i in with_)
+            url = f"{url}&with={with_str}"
+        return self._send_api_request("get", url)
 
     def get_user(
         self,
@@ -2765,16 +2771,16 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/users/{user_id}'
+        url = f"{self.crm_url}/api/v4/users/{user_id}"
         with_ = []
         if with_group:
-            with_.append('group')
+            with_.append("group")
         if with_role:
-            with_.append('role')
+            with_.append("role")
         if with_:
-            with_str = ','.join(i for i in with_)
-            url = f'{url}?with={with_str}'
-        return self._send_api_request('get', url)
+            with_str = ",".join(i for i in with_)
+            url = f"{url}?with={with_str}"
+        return self._send_api_request("get", url)
 
     def get_webhooks(self, distansion: Optional[str] = None) -> dict:
         """Get webwooks
@@ -2817,11 +2823,11 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/webhooks'
+        url = f"{self.crm_url}/api/v4/webhooks"
         if distansion:
-            params = {'filter[distansion]': distansion}
-            url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+            params = {"filter[distansion]": distansion}
+            url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def subscribe_webhook(self, destination: str, settings: list) -> dict:
         """Subscribe on webhook
@@ -2845,16 +2851,16 @@ class BaseClient(object):
                 ]
             }
         """
-        url = f'{self.crm_url}/api/v4/webhooks'
-        params = {'destination': destination, 'settings': settings}
-        return self._send_api_request('post', url, data=params)
+        url = f"{self.crm_url}/api/v4/webhooks"
+        params = {"destination": destination, "settings": settings}
+        return self._send_api_request("post", url, data=params)
 
     def unsubscribe_webhook(self):
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-delete
         """
-        url = f'{self.crm_url}/api/v4/webhooks'
-        return self._send_api_request('delete', url)
+        url = f"{self.crm_url}/api/v4/webhooks"
+        return self._send_api_request("delete", url)
 
     def get_widgets(self, page: int = 1, limit: int = 250) -> dict:
         """Get widgets
@@ -2930,10 +2936,10 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/widgets'
-        params = {'page': page, 'limit': limit}
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/widgets"
+        params = {"page": page, "limit": limit}
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_widget(self, widget_code: str) -> dict:
         """Get widget
@@ -2968,8 +2974,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return self._send_api_request("get", url)
 
     def install_widget(self, widget_code: str, **kwargs) -> dict:
         """Install widget
@@ -3030,8 +3036,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
-        return self._send_api_request('post', url, kwargs)
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return self._send_api_request("post", url, kwargs)
 
     def uninstall_widget(self, widget_code: str) -> dict:
         """Uninstall widget
@@ -3043,8 +3049,8 @@ class BaseClient(object):
             dict: {}
         """
 
-        url = f'{self.crm_url}/api/v4/widgets/{widget_code}'
-        return self._send_api_request('delete', url)
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return self._send_api_request("delete", url)
 
     def get_tasks(
         self,
@@ -3124,8 +3130,8 @@ class BaseClient(object):
                 }
             }
         """
-        params = {k: v for k, v in locals().items() if k != 'self'}
-        return self._get_entities('tasks', **params)
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return self._get_entities("tasks", **params)
 
     def get_task(self, task_id: int) -> dict:
         """Get task
@@ -3160,8 +3166,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/tasks/{task_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/tasks/{task_id}"
+        return self._send_api_request("get", url)
 
     def add_tasks(self, tasks: list) -> dict:
         """Add tasks
@@ -3202,7 +3208,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('tasks', tasks)
+        return self._create_or_update_entities("tasks", tasks)
 
     def update_tasks(self, tasks: list) -> dict:
         """Add tasks
@@ -3243,7 +3249,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities('tasks', tasks, True)
+        return self._create_or_update_entities("tasks", tasks, True)
 
     def execution_task(self, task_id: int, is_completed: bool, result: str) -> dict:
         """Executuin task
@@ -3261,9 +3267,9 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/tasks/{task_id}'
-        params = {'is_completed': is_completed, 'result': {'text': result}}
-        return self._send_api_request('patch', url, params)
+        url = f"{self.crm_url}/api/v4/tasks/{task_id}"
+        params = {"is_completed": is_completed, "result": {"text": result}}
+        return self._send_api_request("patch", url, params)
 
     def get_tags_by_entity_type(
         self,
@@ -3305,8 +3311,8 @@ class BaseClient(object):
                 }
             }
         """
-        params: dict = {'page': page, 'limit': limit, 'filters': filters}
-        return self._get_entities(f'{entity_type}/tags', **params)
+        params: dict = {"page": page, "limit": limit, "filters": filters}
+        return self._get_entities(f"{entity_type}/tags", **params)
 
     def add_tags_for_entity_type(self, entity_type: str, tags: list) -> dict:
         """Add tags for entity type
@@ -3339,7 +3345,7 @@ class BaseClient(object):
                 }
             }
         """
-        return self._create_or_update_entities(f'{entity_type}/tags', tags)
+        return self._create_or_update_entities(f"{entity_type}/tags", tags)
 
     def _get_custom_field_by_entity_type(
         self, entity_type: str, custom_field_id: int
@@ -3404,29 +3410,29 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/{entity_type}/custom_fields/{custom_field_id}'
-        return self._send_api_request('get', url)
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/{custom_field_id}"
+        return self._send_api_request("get", url)
 
     def get_leads_custom_field(self, custom_field_id: int) -> dict:
-        return self._get_custom_field_by_entity_type('leads', custom_field_id)
+        return self._get_custom_field_by_entity_type("leads", custom_field_id)
 
     def get_contacts_custom_field(self, custom_field_id: int) -> dict:
-        return self._get_custom_field_by_entity_type('contacts', custom_field_id)
+        return self._get_custom_field_by_entity_type("contacts", custom_field_id)
 
     def get_companies_custom_field(self, custom_field_id: int) -> dict:
-        return self._get_custom_field_by_entity_type('companies', custom_field_id)
+        return self._get_custom_field_by_entity_type("companies", custom_field_id)
 
     def get_customers_custom_field(self, custom_field_id: int) -> dict:
-        return self._get_custom_field_by_entity_type('customers', custom_field_id)
+        return self._get_custom_field_by_entity_type("customers", custom_field_id)
 
     def get_customers_segments_custom_field(self, custom_field_id: int) -> dict:
         return self._get_custom_field_by_entity_type(
-            'customers/segments', custom_field_id
+            "customers/segments", custom_field_id
         )
 
     def get_catalog_custom_field(self, catalog_id: int, custom_field_id: int) -> dict:
         return self._get_custom_field_by_entity_type(
-            f'catalogs/{catalog_id}', custom_field_id
+            f"catalogs/{catalog_id}", custom_field_id
         )
 
     def _create_custom_fields(self, entity_type: str, custom_fields: list) -> dict:
@@ -3479,28 +3485,28 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/{entity_type}/custom_fields'
-        return self._send_api_request('post', url, custom_fields)
+        url = f"{self.crm_url}/{entity_type}/custom_fields"
+        return self._send_api_request("post", url, custom_fields)
 
     def create_leads_custom_fields(self, custom_fields: list) -> dict:
-        return self._create_custom_fields('leads', custom_fields)
+        return self._create_custom_fields("leads", custom_fields)
 
     def create_contacts_custom_fields(self, custom_fields: list) -> dict:
-        return self._create_custom_fields('contacts', custom_fields)
+        return self._create_custom_fields("contacts", custom_fields)
 
     def create_companies_custom_fields(self, custom_fields: list) -> dict:
-        return self._create_custom_fields('companies', custom_fields)
+        return self._create_custom_fields("companies", custom_fields)
 
     def create_customers_custom_fields(self, custom_fields: list) -> dict:
-        return self._create_custom_fields('customers', custom_fields)
+        return self._create_custom_fields("customers", custom_fields)
 
     def create_customers_segments_custom_fields(self, custom_fields: list) -> dict:
-        return self._create_custom_fields('customers/segments', custom_fields)
+        return self._create_custom_fields("customers/segments", custom_fields)
 
     def create_catalog_custom_fields(
         self, catalog_id: int, custom_fields: list
     ) -> dict:
-        return self._create_custom_fields(f'catalogs/{catalog_id}', custom_fields)
+        return self._create_custom_fields(f"catalogs/{catalog_id}", custom_fields)
 
     def _update_custom_fields(self, entity_type: str, custom_fields: list) -> dict:
         """Create custom fields by entity type
@@ -3552,28 +3558,28 @@ class BaseClient(object):
             }
         }
         """
-        url = f'{self.crm_url}/{entity_type}/custom_fields'
-        return self._send_api_request('patch', url, custom_fields)
+        url = f"{self.crm_url}/{entity_type}/custom_fields"
+        return self._send_api_request("patch", url, custom_fields)
 
     def update_leads_custom_fields(self, custom_fields: list) -> dict:
-        return self._update_custom_fields('leads', custom_fields)
+        return self._update_custom_fields("leads", custom_fields)
 
     def update_contacts_custom_fields(self, custom_fields: list) -> dict:
-        return self._update_custom_fields('contacts', custom_fields)
+        return self._update_custom_fields("contacts", custom_fields)
 
     def update_companies_custom_fields(self, custom_fields: list) -> dict:
-        return self._update_custom_fields('companies', custom_fields)
+        return self._update_custom_fields("companies", custom_fields)
 
     def update_customers_custom_fields(self, custom_fields: list) -> dict:
-        return self._update_custom_fields('customers', custom_fields)
+        return self._update_custom_fields("customers", custom_fields)
 
     def update_customers_segments_custom_fields(self, custom_fields: list) -> dict:
-        return self._update_custom_fields('customers/segments', custom_fields)
+        return self._update_custom_fields("customers/segments", custom_fields)
 
     def update_catalog_custom_fields(
         self, catalog_id: int, custom_fields: list
     ) -> dict:
-        return self._update_custom_fields(f'catalogs/{catalog_id}', custom_fields)
+        return self._update_custom_fields(f"catalogs/{catalog_id}", custom_fields)
 
     def get_events_type(
         self,
@@ -3610,9 +3616,9 @@ class BaseClient(object):
                 }
             }
         """
-        params = {'language_code': language_code}
-        url = f'{self.crm_url}/api/v4/events/types?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        params = {"language_code": language_code}
+        url = f"{self.crm_url}/api/v4/events/types?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_events(
         self,
@@ -3690,27 +3696,27 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/events'
-        params: dict = {'limit': limit, 'page': page}
+        url = f"{self.crm_url}/api/v4/events"
+        params: dict = {"limit": limit, "page": page}
         if with_params:
-            params['with'] = ','.join(param for param in with_params)  # type: ignore
+            params["with"] = ",".join(param for param in with_params)  # type: ignore
         if filter_by_ids:
-            params['filter[id]'] = filter_by_ids  # type: ignore
+            params["filter[id]"] = filter_by_ids  # type: ignore
         if filter_by_created_from:
-            params['filter[created_at][from]'] = filter_by_created_from  # type: ignore
+            params["filter[created_at][from]"] = filter_by_created_from  # type: ignore
         if filter_by_created_to:
-            params['filter[created_at][to]'] = filter_by_created_to  # type: ignore
+            params["filter[created_at][to]"] = filter_by_created_to  # type: ignore
         if filter_by_created_by:
-            params['filter[created_by][]'] = filter_by_created_by  # type: ignore
+            params["filter[created_by][]"] = filter_by_created_by  # type: ignore
         if filter_by_entity:
-            params['filter[entity][]'] = filter_by_entity  # type: ignore
+            params["filter[entity][]"] = filter_by_entity  # type: ignore
         if filter_by_entity_id:
-            params['filter[entity_id][]'] = filter_by_entity_id  # type: ignore
+            params["filter[entity_id][]"] = filter_by_entity_id  # type: ignore
         if filter_by_type:
-            params['filter[type]'] = filter_by_type  # type: ignore
+            params["filter[type]"] = filter_by_type  # type: ignore
 
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_event(
         self,
@@ -3755,13 +3761,13 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/events/{id}'
+        url = f"{self.crm_url}/api/v4/events/{id}"
         params = {}
         if with_params:
-            params['with'] = ','.join(param for param in with_params)
+            params["with"] = ",".join(param for param in with_params)
 
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_notes_by_entity_type(
         self,
@@ -3774,8 +3780,8 @@ class BaseClient(object):
         filter_by_updated_at: Optional[int] = None,
         filter_by_updated_at_from: Optional[int] = None,
         filter_by_updated_at_to: Optional[int] = None,
-        order_by_updated_at: str = 'asc',
-        order_by_id: str = 'asc',
+        order_by_updated_at: str = "asc",
+        order_by_id: str = "asc",
     ) -> dict:
         """Get notes by event type
 
@@ -3850,27 +3856,27 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/{entity_type}/notes'
-        params: dict = {'page': page, 'limit': limit}
+        url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        params: dict = {"page": page, "limit": limit}
         if filter_by_id:
-            params['filter[id]'] = filter_by_id  # type: ignore
+            params["filter[id]"] = filter_by_id  # type: ignore
         if filter_by_note_type:
-            params['filter[note_type]'] = filter_by_note_type  # type: ignore
+            params["filter[note_type]"] = filter_by_note_type  # type: ignore
         if filter_by_entity_id:
-            params['filter[entity_id]'] = filter_by_entity_id  # type: ignore
+            params["filter[entity_id]"] = filter_by_entity_id  # type: ignore
         if filter_by_updated_at:
-            params['filter[updated_at]'] = filter_by_updated_at  # type: ignore
+            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
         if filter_by_updated_at_from:
-            params['filter[updated_at][from]'] = filter_by_updated_at_from
+            params["filter[updated_at][from]"] = filter_by_updated_at_from
         if filter_by_updated_at_to:
-            params['filter[updated_at][to]'] = filter_by_updated_at_to
+            params["filter[updated_at][to]"] = filter_by_updated_at_to
         if order_by_updated_at:
-            params['order[updated_at]'] = order_by_updated_at  # type: ignore
+            params["order[updated_at]"] = order_by_updated_at  # type: ignore
         if order_by_id:
-            params['order[id]'] = order_by_id  # type: ignore
+            params["order[id]"] = order_by_id  # type: ignore
 
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_notes_by_entity_type_and_entity_id(
         self,
@@ -3883,8 +3889,8 @@ class BaseClient(object):
         filter_by_updated_at: Optional[int] = None,
         filter_by_updated_at_from: Optional[int] = None,
         filter_by_updated_at_to: Optional[int] = None,
-        order_by_updated_at: str = 'asc',
-        order_by_id: str = 'asc',
+        order_by_updated_at: str = "asc",
+        order_by_id: str = "asc",
     ) -> dict:
         """Get notes by event type and entity id
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-entity-list
@@ -3959,25 +3965,25 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
-        params: dict = {'page': page, 'limit': limit}
+        url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
+        params: dict = {"page": page, "limit": limit}
         if filter_by_id:
-            params['filter[id]'] = filter_by_id  # type: ignore
+            params["filter[id]"] = filter_by_id  # type: ignore
         if filter_by_note_type:
-            params['filter[note_type]'] = filter_by_note_type  # type: ignore
+            params["filter[note_type]"] = filter_by_note_type  # type: ignore
         if filter_by_updated_at:
-            params['filter[updated_at]'] = filter_by_updated_at  # type: ignore
+            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
         if filter_by_updated_at_from:
-            params['filter[updated_at][from]'] = filter_by_updated_at_from
+            params["filter[updated_at][from]"] = filter_by_updated_at_from
         if filter_by_updated_at_to:
-            params['filter[updated_at][to]'] = filter_by_updated_at_to
+            params["filter[updated_at][to]"] = filter_by_updated_at_to
         if order_by_updated_at:
-            params['order[updated_at]'] = order_by_updated_at  # type: ignore
+            params["order[updated_at]"] = order_by_updated_at  # type: ignore
         if order_by_id:
-            params['order[id]'] = order_by_id  # type: ignore
+            params["order[id]"] = order_by_id  # type: ignore
 
-        url = f'{url}?{urlencode(params)}'
-        return self._send_api_request('get', url)
+        url = f"{url}?{urlencode(params)}"
+        return self._send_api_request("get", url)
 
     def get_entity_note(
         self, entity_type: str, id_: int, entity_id: Optional[int] = None
@@ -4012,10 +4018,10 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}'
+            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes/{id_}'
-        return self._send_api_request('get', url)
+            url = f"{self.crm_url}/api/v4/{entity_type}/notes/{id_}"
+        return self._send_api_request("get", url)
 
     def create_entity_note(
         self, entity_type: str, notes: list, entity_id: Optional[int] = None
@@ -4081,10 +4087,10 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
+            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
-        return self._send_api_request('post', url, data=notes)
+            url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        return self._send_api_request("post", url, data=notes)
 
     def update_entity_note(
         self, entity_type: str, entity_id: int, id_: int, params: dict
@@ -4129,8 +4135,8 @@ class BaseClient(object):
                 }
             }
         """
-        url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}'
-        return self._send_api_request('patch', url, params)
+        url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
+        return self._send_api_request("patch", url, params)
 
     def update_entity_many_notes(
         self,
@@ -4179,7 +4185,7 @@ class BaseClient(object):
             }
         """
         if entity_id:
-            url = f'{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes'
+            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
         else:
-            url = f'{self.crm_url}/api/v4/{entity_type}/notes'
-        return self._send_api_request('patch', url, data=notes)
+            url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        return self._send_api_request("patch", url, data=notes)

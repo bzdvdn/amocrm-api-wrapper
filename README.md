@@ -1213,4 +1213,5 @@ get_catalog_custom_fields = client.update_catalog_custom_field('<catalog_id>', [
 
 ### changelog
 
+- 0.0.18 - add filter_ids get_leads and \_get_entities method
 - 0.0.12 - add entity notes methods, rename updatecustomers_segments_custom_fields -> update_customers_segments_custom_fields

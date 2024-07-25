@@ -4,12 +4,12 @@ from setuptools import setup, find_packages
 
 
 def read(f):
-    return open(f, "r", encoding='utf-8').read()
+    return open(f, "r", encoding="utf-8").read()
 
 
 setup(
     name="amocrm-api-wrapper",
-    version='0.0.17',
+    version="0.0.18",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
         "requests",
