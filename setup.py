@@ -9,7 +9,7 @@ def read(f):
 
 setup(
     name="amocrm-api-wrapper",
-    version="0.0.18",
+    version="0.0.19",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
         "requests",

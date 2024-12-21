@@ -3485,7 +3485,7 @@ class BaseClient(object):
             }
         }
         """
-        url = f"{self.crm_url}/{entity_type}/custom_fields"
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields"
         return self._send_api_request("post", url, custom_fields)
 
     def create_leads_custom_fields(self, custom_fields: list) -> dict:
@@ -3558,7 +3558,7 @@ class BaseClient(object):
             }
         }
         """
-        url = f"{self.crm_url}/{entity_type}/custom_fields"
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields"
         return self._send_api_request("patch", url, custom_fields)
 
     def update_leads_custom_fields(self, custom_fields: list) -> dict:
