@@ -79,7 +79,7 @@ class BaseClient(object):
         if closed_from:
             filter_query["filter[closed_at][from]"] = closed_from
         if closed_to:
-            filter_query["filter[closed_at][to]"] = created_to
+            filter_query["filter[closed_at][to]"] = closed_to
         filter_query.update({f"filter[{k}]": v for k, v in filters.items()})
         return filter_query
 
