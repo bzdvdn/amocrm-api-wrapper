@@ -10,11 +10,12 @@ from amocrm_api.oauth_client import AmoOAuthClient
 
 
 class FakeResponse:
-    def __init__(self, body=None, status_code=200, content=None):
+    def __init__(self, body=None, status_code=200, content=None, headers=None):
         self.status_code = status_code
         self.content = content if content is not None else (
             body if body is not None else b""
         )
+        self.headers = headers if headers is not None else {}
 
     def json(self):
         return json.loads(self.content or b"{}")
@@ -38,7 +39,7 @@ class TestSendApiRequest(unittest.TestCase):
             mock_get.return_value = FakeResponse(status_code=204)
             result = client._send_api_request("get", "http://x")
         self.assertEqual(result, {})
-        mock_get.assert_called_once_with("http://x", json=None)
+        mock_get.assert_called_once_with("http://x", json=None, timeout=30.0)
 
     def test_success_unwraps_response_key(self):
         client = make_client()

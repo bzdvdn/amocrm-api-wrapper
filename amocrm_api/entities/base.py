@@ -101,17 +101,17 @@ class Entity:
         created_to = filters.pop("created_at__to", None)
         closed_from = filters.pop("closed_at__from", None)
         closed_to = filters.pop("closed_at__to", None)
-        if update_from:
+        if update_from is not None:
             filter_query["filter[updated_at][from]"] = update_from
-        if update_to:
+        if update_to is not None:
             filter_query["filter[updated_at][to]"] = update_to
-        if created_from:
+        if created_from is not None:
             filter_query["filter[created_at][from]"] = created_from
-        if created_to:
+        if created_to is not None:
             filter_query["filter[created_at][to]"] = created_to
-        if closed_from:
+        if closed_from is not None:
             filter_query["filter[closed_at][from]"] = closed_from
-        if closed_to:
+        if closed_to is not None:
             filter_query["filter[closed_at][to]"] = closed_to
         filter_query.update({f"filter[{k}]": v for k, v in filters.items()})
         return filter_query
