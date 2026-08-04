@@ -1,10 +1,9 @@
 from json import JSONDecodeError
 from requests import Session, ConnectionError, ConnectTimeout
-from typing import Optional, Union
-from urllib.parse import urlencode
+from typing import Optional
 
 from .errors import AmoException
-from .base import BaseClient
+from .base import BaseClient, mask_token
 
 
 class AmoLegacyClient(BaseClient):
@@ -38,7 +37,7 @@ class AmoLegacyClient(BaseClient):
         session = Session()
         if isinstance(headers, dict):
             session.headers.update(**headers)
-        auth_response = session.post(url, json=params).json()
+        auth_response = session.post(url, json=params, timeout=self.timeout).json()
         if  auth_response.get("response", {}).get("auth", {}):
             return session
         raise AmoException(auth_response)
@@ -47,7 +46,9 @@ class AmoLegacyClient(BaseClient):
         self, method: str, url: str, data: Optional[dict] = None
     ) -> dict:
         try:
-            response = self._session.__getattribute__(method)(url, json=data)
+            response = self._session.__getattribute__(method)(
+                url, json=data, timeout=self.timeout
+            )
             if response.status_code == 204:
                 return {}
             json_data = response.json()
@@ -56,3 +57,10 @@ class AmoLegacyClient(BaseClient):
             return json_data
         except (ConnectTimeout, ConnectionError, JSONDecodeError) as e:
             raise AmoException({'error': str(e)})
+
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__} login={self.login!r} "
+            f"token={mask_token(self.token)!r}>"
+        )
+

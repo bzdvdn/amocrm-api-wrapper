@@ -1,0 +1,287 @@
+from .base import Entity
+
+from typing import Optional
+
+class Leads(Entity):
+    def link_leads_entity(self, entity_id: int, objects: list) -> dict:
+        return self._link_entities("leads", entity_id, objects)
+
+    def unlink_leads_entity(self, entity_id: int, objects: list) -> dict:
+        return self._unlink_entities("leads", entity_id, objects)
+
+    def get_leads_links(self, entity_id: int, filters: Optional[dict] = None) -> dict:
+        return self._get_entity_links("leads", entity_id, filters)
+
+    def create_leads(self, objects: list) -> dict:
+        """create leads
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-add
+        Args:
+            objects (list): list of leads
+    
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads"
+                    }
+                },
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 10185151,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/10185151"
+                                }
+                            }
+                        },
+                        {
+                            "id": 10185153,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/10185153"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities("leads", objects)
+
+    def update_leads(self, objects: list) -> dict:
+        """update leads
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
+        Args:
+            objects (list): list of leads
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads"
+                    }
+                },
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 54886,
+                            "updated_at": 1589556420,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/54886"
+                                }
+                            }
+                        },
+                        {
+                            "id": 54884,
+                            "updated_at": 1589556420,
+                            "request_id": "1",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/54884"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        return self._create_or_update_entities("leads", objects, True)
+
+    def get_lead(self, lead_id: int) -> dict:
+        """return lead
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#lead-detail
+        Args:
+            lead_id (int): id of lead
+    
+        Returns:
+            dict: {
+                "id": 3912171,
+                "name": "Example",
+                "price": 12,
+                "responsible_user_id": 504141,
+                "group_id": 0,
+                "status_id": 143,
+                "pipeline_id": 3104455,
+                "loss_reason_id": 4203748,
+                "source_id": null,
+                "created_by": 504141,
+                "updated_by": 504141,
+                "created_at": 1585299171,
+                "updated_at": 1590683337,
+                "closed_at": 1590683337,
+                "closest_task_at": null,
+                "is_deleted": false,
+                "custom_fields_values": null,
+                "score": null,
+                "account_id": 28805383,
+                "is_price_modified_by_robot": false,
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/3912171"
+                    }
+                },
+                "_embedded": {
+                    "tags": [
+                        {
+                            "id": 100667,
+                            "name": "тест"
+                        }
+                    ],
+                    "catalog_elements": [
+                        {
+                            "id": 525439,
+                            "metadata": {
+                                "quantity": 1,
+                                "catalog_id": 4521
+                            }
+                        }
+                    ],
+                    "loss_reason": [
+                        {
+                            "id": 4203748,
+                            "name": "Пропала потребность",
+                            "sort": 100000,
+                            "created_at": 1582117280,
+                            "updated_at": 1582117280,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/loss_reasons/4203748"
+                                }
+                            }
+                        }
+                    ],
+                    "companies": [
+                        {
+                            "id": 10971463,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/companies/10971463"
+                                }
+                            }
+                        }
+                    ],
+                    "contacts": [
+                        {
+                            "id": 10971465,
+                            "is_main": true,
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/contacts/10971465"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        url = f"{self.crm_url}/api/v4/leads/{lead_id}"
+        return self._send_api_request("get", url)
+
+    def get_leads(
+        self,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Get leads
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-list
+        Args:
+            limit (int, optional): limit of rows. Defaults to 250.
+            page (int, optional): number of page. Defaults to 1.
+            with_params (Optional[list], optional): params. Defaults to None.
+            filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
+            filter_ids (Optional[list], optional): filter ids like [1,2,2310]. Defaults to None.
+            order (Optional[dict], optional): order params like {'update_at': 'asc'}. Defaults to None.
+    
+        Returns:
+            dict: {
+            "_page": 2,
+            "_links": {
+                "self": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=2"
+                },
+                "next": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=3"
+                },
+                "first": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=1"
+                },
+                "prev": {
+                    "href": "https://example.amocrm.ru/api/v4/leads?limit=2&page=1"
+                }
+            },
+            "_embedded": {
+                "leads": [
+                    {
+                        "id": 19619,
+                        "name": "Сделка для примера",
+                        "price": 46333,
+                        "responsible_user_id": 123321,
+                        "group_id": 625,
+                        "status_id": 142,
+                        "pipeline_id": 1300,
+                        "loss_reason_id": null,
+                        "source_id": null,
+                        "created_by": 321123,
+                        "updated_by": 321123,
+                        "created_at": 1453279607,
+                        "updated_at": 1502193501,
+                        "closed_at": 1483005931,
+                        "closest_task_at": null,
+                        "is_deleted": false,
+                        "custom_fields_values": null,
+                        "score": null,
+                        "account_id": 5135160,
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/19619"
+                            }
+                        },
+                        "_embedded": {
+                            "tags": [],
+                            "companies": []
+                        }
+                    },
+                    {
+                        "id": 14460,
+                        "name": "Сделка для примера 2",
+                        "price": 655,
+                        "responsible_user_id": 123321,
+                        "group_id": 625,
+                        "status_id": 142,
+                        "pipeline_id": 1300,
+                        "loss_reason_id": null,
+                        "source_id": null,
+                        "created_by": 321123,
+                        "updated_by": 321123,
+                        "created_at": 1453279607,
+                        "updated_at": 1502193501,
+                        "closed_at": 1483005931,
+                        "closest_task_at": null,
+                        "is_deleted": false,
+                        "custom_fields_values": null,
+                        "score": null,
+                        "account_id": 1351360,
+                        "_links": {
+                            "self": {
+                                "href": "https://example.amocrm.ru/api/v4/leads/14460"
+                            }
+                        },
+                        "_embedded": {
+                            "tags": [],
+                            "companies": []
+                        }
+                    }
+                ]
+            }
+        }
+        """
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return self._get_entities("leads", **params)

@@ -19,7 +19,7 @@ setup(
     author_email="bzdv.dn@gmail.com",
     url="https://github.com/bzdvdn/amocrm-api-wrapper",
     license="MIT",
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
 )
