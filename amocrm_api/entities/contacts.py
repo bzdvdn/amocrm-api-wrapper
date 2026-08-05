@@ -1,10 +1,63 @@
 
 from collections.abc import AsyncIterator, Iterator
+from urllib.parse import urlencode
 
 from .base import Entity
 
 
 class Contacts(Entity):
+    def _build_get_contacts_chats_url(
+        self,
+        page: int | None,
+        limit: int | None,
+        filter_by_chat_ids: str | list | None,
+        filter_by_contact_ids: int | list | None,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/contacts/chats"
+        params: dict = {}
+        if page is not None:
+            params["page"] = page
+        if limit is not None:
+            params["limit"] = limit
+        if filter_by_chat_ids:
+            params["filter[chat_id][]" if isinstance(filter_by_chat_ids, list) else "filter[chat_id]"] = (
+                filter_by_chat_ids
+            )
+        if filter_by_contact_ids:
+            params["filter[contact_id][]" if isinstance(filter_by_contact_ids, list) else "filter[contact_id]"] = (
+                filter_by_contact_ids
+            )
+        return f"{url}?{urlencode(params, doseq=True)}"
+
+    def get_contacts_chats(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        filter_by_chat_ids: str | list | None = None,
+        filter_by_contact_ids: int | list | None = None,
+    ) -> dict:
+        """Get chats related to contacts
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-chats
+        Args:
+            page (Optional[int], optional): page number. Defaults to None.
+            limit (Optional[int], optional): limit of rows. Defaults to None.
+            filter_by_chat_ids (Union[str, list, None], optional): chat uuids filter. Defaults to None.
+            filter_by_contact_ids (Union[int, list, None], optional): contact ids filter. Defaults to None.
+        """
+        url = self._build_get_contacts_chats_url(
+            page, limit, filter_by_chat_ids, filter_by_contact_ids
+        )
+        return self._send_api_request("get", url)
+
+    def create_contacts_chats(self, objects: list) -> dict:
+        """Bind chats to contacts
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-chats
+        Args:
+            objects (list): list of {'contact_id': int, 'chat_id': str, 'request_id': str}
+        """
+        url = f"{self.crm_url}/api/v4/contacts/chats"
+        return self._send_api_request("post", url, objects)
+
     def unlink_contacts_entity(self, entity_id: int, objects: list) -> dict:
         return self._unlink_entities("contacts", entity_id, objects)
 
@@ -256,6 +309,24 @@ class Contacts(Entity):
             }
         """
         return self._create_or_update_entities("contacts", contacts, True)
+
+    async def get_contacts_chats_async(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        filter_by_chat_ids: str | list | None = None,
+        filter_by_contact_ids: int | list | None = None,
+    ) -> dict:
+        """Async version of get_contacts_chats."""
+        url = self._build_get_contacts_chats_url(
+            page, limit, filter_by_chat_ids, filter_by_contact_ids
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def create_contacts_chats_async(self, objects: list) -> dict:
+        """Async version of create_contacts_chats."""
+        url = f"{self.crm_url}/api/v4/contacts/chats"
+        return await self._send_api_request_async("post", url, objects)
 
     async def unlink_contacts_entity_async(
         self, entity_id: int, objects: list

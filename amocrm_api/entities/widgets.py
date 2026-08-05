@@ -217,3 +217,49 @@ class Widgets(Entity):
         """Async version of uninstall_widget."""
         url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
         return await self._send_api_request_async("delete", url)
+
+    def continue_salesbot_widget(
+        self,
+        bot_type: str,
+        bot_id: int,
+        continue_id: int,
+        data: dict | None = None,
+        execute_handlers: list | None = None,
+    ) -> dict:
+        """Confirm widget block execution in Salesbot and continue bot
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-continue
+        Args:
+            bot_type (str): salesbot or marketingbot
+            bot_id (int): id of bot
+            continue_id (int): id of continue block
+            data (Optional[dict], optional): data for widget. Defaults to None.
+            execute_handlers (Optional[list], optional): handlers (show, goto). Defaults to None.
+        """
+        url = (
+            f"{self.crm_url}/api/v4/{bot_type}/{bot_id}/continue/{continue_id}"
+        )
+        params: dict = {}
+        if data is not None:
+            params["data"] = data
+        if execute_handlers is not None:
+            params["execute_handlers"] = execute_handlers
+        return self._send_api_request("post", url, params)
+
+    async def continue_salesbot_widget_async(
+        self,
+        bot_type: str,
+        bot_id: int,
+        continue_id: int,
+        data: dict | None = None,
+        execute_handlers: list | None = None,
+    ) -> dict:
+        """Async version of continue_salesbot_widget."""
+        url = (
+            f"{self.crm_url}/api/v4/{bot_type}/{bot_id}/continue/{continue_id}"
+        )
+        params: dict = {}
+        if data is not None:
+            params["data"] = data
+        if execute_handlers is not None:
+            params["execute_handlers"] = execute_handlers
+        return await self._send_api_request_async("post", url, params)

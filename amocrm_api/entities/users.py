@@ -327,3 +327,111 @@ class Users(Entity):
         """Async version of get_user."""
         url = self._build_get_user_url(user_id, with_role, with_group)
         return await self._send_api_request_async("get", url)
+
+    def add_users(self, users: list) -> dict:
+        """Add users to account
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-add
+        """
+        url = f"{self.crm_url}/api/v4/users"
+        return self._send_api_request("post", url, users)
+
+    def activate_users(self, users: list) -> dict:
+        """Activate users
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-activate
+        """
+        url = f"{self.crm_url}/api/v4/users/activate"
+        return self._send_api_request("post", url, users)
+
+    def deactivate_users(self, users: list) -> dict:
+        """Deactivate users
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#users-deactivate
+        """
+        url = f"{self.crm_url}/api/v4/users/deactivate"
+        return self._send_api_request("post", url, users)
+
+    def get_roles(
+        self, page: int = 1, limit: int = 250, query: str | None = None
+    ) -> dict:
+        """Get roles
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-list
+        """
+        url = f"{self.crm_url}/api/v4/roles"
+        params: dict = {"page": page, "limit": limit}
+        if query:
+            params["query"] = query
+        return self._send_api_request("get", f"{url}?{urlencode(params)}")
+
+    def get_role(self, role_id: int) -> dict:
+        """Get role by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#role-detail
+        """
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return self._send_api_request("get", url)
+
+    def create_roles(self, roles: list) -> dict:
+        """Create roles
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-add
+        """
+        url = f"{self.crm_url}/api/v4/roles"
+        return self._send_api_request("post", url, roles)
+
+    def update_role(self, role_id: int, role: dict) -> dict:
+        """Update role by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-edit
+        """
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return self._send_api_request("patch", url, role)
+
+    def delete_role(self, role_id: int) -> dict:
+        """Delete role by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-delete
+        """
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return self._send_api_request("delete", url)
+
+    async def add_users_async(self, users: list) -> dict:
+        """Async version of add_users."""
+        url = f"{self.crm_url}/api/v4/users"
+        return await self._send_api_request_async("post", url, users)
+
+    async def activate_users_async(self, users: list) -> dict:
+        """Async version of activate_users."""
+        url = f"{self.crm_url}/api/v4/users/activate"
+        return await self._send_api_request_async("post", url, users)
+
+    async def deactivate_users_async(self, users: list) -> dict:
+        """Async version of deactivate_users."""
+        url = f"{self.crm_url}/api/v4/users/deactivate"
+        return await self._send_api_request_async("post", url, users)
+
+    async def get_roles_async(
+        self, page: int = 1, limit: int = 250, query: str | None = None
+    ) -> dict:
+        """Async version of get_roles."""
+        url = f"{self.crm_url}/api/v4/roles"
+        params: dict = {"page": page, "limit": limit}
+        if query:
+            params["query"] = query
+        return await self._send_api_request_async(
+            "get", f"{url}?{urlencode(params)}"
+        )
+
+    async def get_role_async(self, role_id: int) -> dict:
+        """Async version of get_role."""
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def create_roles_async(self, roles: list) -> dict:
+        """Async version of create_roles."""
+        url = f"{self.crm_url}/api/v4/roles"
+        return await self._send_api_request_async("post", url, roles)
+
+    async def update_role_async(self, role_id: int, role: dict) -> dict:
+        """Async version of update_role."""
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return await self._send_api_request_async("patch", url, role)
+
+    async def delete_role_async(self, role_id: int) -> dict:
+        """Async version of delete_role."""
+        url = f"{self.crm_url}/api/v4/roles/{role_id}"
+        return await self._send_api_request_async("delete", url)

@@ -88,12 +88,14 @@ class Webhooks(Entity):
         params = self._build_subscribe_webhook_params(destination, settings)
         return self._send_api_request("post", url, data=params)
 
-    def unsubscribe_webhook(self) -> dict:
+    def unsubscribe_webhook(self, destination: str) -> dict:
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-delete
+        Args:
+            destination (str): exact webhook url to unsubscribe
         """
         url = f"{self.crm_url}/api/v4/webhooks"
-        return self._send_api_request("delete", url)
+        return self._send_api_request("delete", url, {"destination": destination})
 
     async def get_webhooks_async(self, destination: str | None = None) -> dict:
         """Async version of get_webhooks."""
@@ -108,7 +110,9 @@ class Webhooks(Entity):
         params = self._build_subscribe_webhook_params(destination, settings)
         return await self._send_api_request_async("post", url, data=params)
 
-    async def unsubscribe_webhook_async(self) -> dict:
+    async def unsubscribe_webhook_async(self, destination: str) -> dict:
         """Async version of unsubscribe_webhook."""
         url = f"{self.crm_url}/api/v4/webhooks"
-        return await self._send_api_request_async("delete", url)
+        return await self._send_api_request_async(
+            "delete", url, {"destination": destination}
+        )

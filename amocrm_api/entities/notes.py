@@ -17,9 +17,12 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None,
         order_by_updated_at: str,
         order_by_id: str,
+        with_params: list | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity_type}/notes"
         params: dict = {"page": page, "limit": limit}
+        if with_params:
+            params["with"] = ",".join(param for param in with_params)
         if filter_by_id:
             params["filter[id][]" if isinstance(filter_by_id, list) else "filter[id]"] = filter_by_id
         if filter_by_note_type:
@@ -52,9 +55,12 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None,
         order_by_updated_at: str,
         order_by_id: str,
+        with_params: list | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
         params: dict = {"page": page, "limit": limit}
+        if with_params:
+            params["with"] = ",".join(param for param in with_params)
         if filter_by_id:
             params["filter[id][]" if isinstance(filter_by_id, list) else "filter[id]"] = filter_by_id
         if filter_by_note_type:
@@ -104,6 +110,7 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None = None,
         order_by_updated_at: str = "asc",
         order_by_id: str = "asc",
+        with_params: list | None = None,
     ) -> dict:
         """Get notes by event type
     
@@ -119,6 +126,7 @@ class Notes(Entity):
             filter_by_updated_at_to (Optional[int], optional): timestamp. Defaults to None.
             order_by_updated_at (str): asc or decs. Defaults to asc.
             order_by_id (str): asc or decs. Defaults to asc.
+            with_params (Optional[list], optional): list of additional params to include, e.g. ["is_pinned"]. Defaults to None.
     
         Returns:
             dict: {
@@ -190,6 +198,7 @@ class Notes(Entity):
             filter_by_updated_at_to,
             order_by_updated_at,
             order_by_id,
+            with_params,
         )
         return self._send_api_request("get", url)
 
@@ -206,6 +215,7 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None = None,
         order_by_updated_at: str = "asc",
         order_by_id: str = "asc",
+        with_params: list | None = None,
     ) -> dict:
         """Get notes by event type and entity id
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-entity-list
@@ -222,6 +232,7 @@ class Notes(Entity):
             filter_by_updated_at_to (Optional[int], optional): timestamp. Defaults to None.
             order_by_updated_at (str): asc or decs. Defaults to asc.
             order_by_id (str): asc or decs. Defaults to asc.
+            with_params (Optional[list], optional): list of additional params to include, e.g. ["is_pinned"]. Defaults to None.
     
         Returns:
             dict: {
@@ -292,6 +303,7 @@ class Notes(Entity):
             filter_by_updated_at_to,
             order_by_updated_at,
             order_by_id,
+            with_params,
         )
         return self._send_api_request("get", url)
 
@@ -507,6 +519,7 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None = None,
         order_by_updated_at: str = "asc",
         order_by_id: str = "asc",
+        with_params: list | None = None,
     ) -> dict:
         """Async version of get_notes_by_entity_type."""
         url = self._build_get_notes_by_entity_type_url(
@@ -521,6 +534,7 @@ class Notes(Entity):
             filter_by_updated_at_to,
             order_by_updated_at,
             order_by_id,
+            with_params,
         )
         return await self._send_api_request_async("get", url)
 
@@ -537,6 +551,7 @@ class Notes(Entity):
         filter_by_updated_at_to: int | None = None,
         order_by_updated_at: str = "asc",
         order_by_id: str = "asc",
+        with_params: list | None = None,
     ) -> dict:
         """Async version of get_notes_by_entity_type_and_entity_id."""
         url = self._build_get_notes_by_entity_type_and_entity_id_url(
@@ -551,6 +566,7 @@ class Notes(Entity):
             filter_by_updated_at_to,
             order_by_updated_at,
             order_by_id,
+            with_params,
         )
         return await self._send_api_request_async("get", url)
 
@@ -586,3 +602,57 @@ class Notes(Entity):
         """Async version of update_entity_many_notes."""
         url = self._build_notes_url(entity_type, entity_id)
         return await self._send_api_request_async("patch", url, data=notes)
+
+    def pin_note(
+        self, entity_type: str, entity_id: int, note_id: int
+    ) -> dict:
+        """Pin a note to the top of the entity card.
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-pin-unpin
+        Args:
+            entity_type (str): entity type
+            entity_id (int): entity id
+            note_id (int): note id
+
+        Returns:
+            dict: empty response
+        """
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{note_id}/pin"
+        )
+        return self._send_api_request("post", url)
+
+    def unpin_note(
+        self, entity_type: str, entity_id: int, note_id: int
+    ) -> dict:
+        """Unpin a note.
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-pin-unpin
+        Args:
+            entity_type (str): entity type
+            entity_id (int): entity id
+            note_id (int): note id
+
+        Returns:
+            dict: empty response
+        """
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{note_id}/unpin"
+        )
+        return self._send_api_request("post", url)
+
+    async def pin_note_async(
+        self, entity_type: str, entity_id: int, note_id: int
+    ) -> dict:
+        """Async version of pin_note."""
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{note_id}/pin"
+        )
+        return await self._send_api_request_async("post", url)
+
+    async def unpin_note_async(
+        self, entity_type: str, entity_id: int, note_id: int
+    ) -> dict:
+        """Async version of unpin_note."""
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{note_id}/unpin"
+        )
+        return await self._send_api_request_async("post", url)

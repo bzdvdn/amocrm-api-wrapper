@@ -53,6 +53,37 @@ class Leads(Entity):
         """
         return self._create_or_update_entities("leads", objects)
 
+    def create_leads_complex(self, objects: list) -> dict:
+        """Create complex leads with nested entities (contacts, companies, notes, tasks).
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-complex
+        Args:
+            objects (list): list of complex leads
+
+        Returns:
+            dict: {
+                "_links": {
+                    "self": {
+                        "href": "https://example.amocrm.ru/api/v4/leads/complex"
+                    }
+                },
+                "_embedded": {
+                    "leads": [
+                        {
+                            "id": 10185151,
+                            "request_id": "0",
+                            "_links": {
+                                "self": {
+                                    "href": "https://example.amocrm.ru/api/v4/leads/10185151"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """
+        url = f"{self.crm_url}/api/v4/leads/complex"
+        return self._send_api_request("post", url, data=objects)
+
     def update_leads(self, objects: list) -> dict:
         """update leads
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
@@ -312,6 +343,11 @@ class Leads(Entity):
     async def create_leads_async(self, objects: list) -> dict:
         """Async version of create_leads."""
         return await self._create_or_update_entities_async("leads", objects)
+
+    async def create_leads_complex_async(self, objects: list) -> dict:
+        """Async version of create_leads_complex."""
+        url = f"{self.crm_url}/api/v4/leads/complex"
+        return await self._send_api_request_async("post", url, data=objects)
 
     async def update_leads_async(self, objects: list) -> dict:
         """Async version of update_leads."""

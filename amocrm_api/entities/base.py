@@ -380,13 +380,13 @@ class Entity:
         return await self._send_api_request_async("post", url, objects)
 
     def _unlink_entities(self, entity: str, entity_id: int, objects: list) -> dict:
-        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks"
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlink"
         return self._send_api_request("post", url, objects)
 
     async def _unlink_entities_async(
         self, entity: str, entity_id: int, objects: list
     ) -> dict:
-        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks"
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlink"
         return await self._send_api_request_async("post", url, objects)
 
     def get_account_info(

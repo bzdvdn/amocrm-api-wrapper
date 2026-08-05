@@ -7,8 +7,13 @@ class Events(Entity):
     def _build_get_events_type_url(
         self,
         language_code: str | None,
+        limit: int | None = None,
     ) -> str:
-        params = {"language_code": language_code}
+        params: dict = {}
+        if language_code:
+            params["language_code"] = language_code
+        if limit is not None:
+            params["limit"] = limit
         return f"{self.crm_url}/api/v4/events/types?{urlencode(params)}"
 
     def _build_get_events_url(
@@ -23,6 +28,8 @@ class Events(Entity):
         filter_by_entity: str | list | None,
         filter_by_entity_id: str | list | None,
         filter_by_type: str | list | None,
+        filter_by_value_before: str | list | None,
+        filter_by_value_after: str | list | None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/events"
         params: dict = {"limit": limit, "page": page}
@@ -41,7 +48,11 @@ class Events(Entity):
         if filter_by_entity_id:
             params["filter[entity_id][]"] = filter_by_entity_id
         if filter_by_type:
-            params["filter[type]"] = filter_by_type
+            params["filter[type][]" if isinstance(filter_by_type, list) else "filter[type]"] = filter_by_type
+        if filter_by_value_before:
+            params["filter[value_before][]"] = filter_by_value_before
+        if filter_by_value_after:
+            params["filter[value_after][]"] = filter_by_value_after
 
         return f"{url}?{urlencode(params, doseq=True)}"
 
@@ -59,12 +70,14 @@ class Events(Entity):
     def get_events_type(
         self,
         language_code: str | None = None,
+        limit: int | None = None,
     ) -> dict:
         """get events types
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-types
     
         Args:
             language_code (Optional[str], optional): language. Defaults to None.
+            limit (Optional[int], optional): limit per page. Defaults to None.
     
         Returns:
             dict: {
@@ -91,7 +104,7 @@ class Events(Entity):
                 }
             }
         """
-        url = self._build_get_events_type_url(language_code)
+        url = self._build_get_events_type_url(language_code, limit)
         return self._send_api_request("get", url)
 
     def get_events(
@@ -106,6 +119,8 @@ class Events(Entity):
         filter_by_entity: str | list | None = None,
         filter_by_entity_id: str | list | None = None,
         filter_by_type: str | list | None = None,
+        filter_by_value_before: str | list | None = None,
+        filter_by_value_after: str | list | None = None,
     ) -> dict:
         """Get events
         Doc: https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#events-list
@@ -120,6 +135,8 @@ class Events(Entity):
             filter_by_entity (Union[str, list, None], optional): by entity. Defaults to None.
             filter_by_entity_id (Union[str, list, None], optional): by entity_id. Defaults to None.
             filter_by_type (Union[str, list, None], optional): by type. Defaults to None.
+            filter_by_value_before (Union[str, list, None], optional): by value_before. Defaults to None.
+            filter_by_value_after (Union[str, list, None], optional): by value_after. Defaults to None.
     
         Returns:
             dict: {
@@ -181,15 +198,18 @@ class Events(Entity):
             filter_by_entity,
             filter_by_entity_id,
             filter_by_type,
+            filter_by_value_before,
+            filter_by_value_after,
         )
         return self._send_api_request("get", url)
 
     async def get_events_type_async(
         self,
         language_code: str | None = None,
+        limit: int | None = None,
     ) -> dict:
         """Async version of get_events_type."""
-        url = self._build_get_events_type_url(language_code)
+        url = self._build_get_events_type_url(language_code, limit)
         return await self._send_api_request_async("get", url)
 
     async def get_events_async(
@@ -204,6 +224,8 @@ class Events(Entity):
         filter_by_entity: str | list | None = None,
         filter_by_entity_id: str | list | None = None,
         filter_by_type: str | list | None = None,
+        filter_by_value_before: str | list | None = None,
+        filter_by_value_after: str | list | None = None,
     ) -> dict:
         """Async version of get_events."""
         url = self._build_get_events_url(
@@ -217,6 +239,8 @@ class Events(Entity):
             filter_by_entity,
             filter_by_entity_id,
             filter_by_type,
+            filter_by_value_before,
+            filter_by_value_after,
         )
         return await self._send_api_request_async("get", url)
 

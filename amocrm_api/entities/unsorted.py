@@ -59,10 +59,15 @@ class Unsorted(Entity):
 
     def _build_accept_unsorted_params(
         self,
-        user_id: int,
-        status_id: int,
+        user_id: int | None,
+        status_id: int | None,
     ) -> dict:
-        return {"user_id": user_id, "status_id": status_id}
+        params: dict = {}
+        if user_id is not None:
+            params["user_id"] = user_id
+        if status_id is not None:
+            params["status_id"] = status_id
+        return params
 
     def _build_get_summary_unsorted_url(
         self,
@@ -341,13 +346,15 @@ class Unsorted(Entity):
         params: dict = {k: v for k, v in locals().items() if k != "self"}
         return self._create_unsorted(entity="form", **params)
 
-    def accept_unsorted(self, uid: str, user_id: int, status_id: int) -> dict:
+    def accept_unsorted(
+        self, uid: str, user_id: int | None = None, status_id: int | None = None
+    ) -> dict:
         """Accept unsorted
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-accept
         Args:
             uid (str): unsorted obejct uid
-            user_id (int): user id
-            status_id (int): status id
+            user_id (Optional[int], optional): user id. Defaults to None.
+            status_id (Optional[int], optional): status id. Defaults to None.
     
         Returns:
             dict: {
@@ -384,12 +391,12 @@ class Unsorted(Entity):
         params = self._build_accept_unsorted_params(user_id, status_id)
         return self._send_api_request("post", url, params)
 
-    def decline_unsorted(self, uid: str, user_id: int) -> dict:
+    def decline_unsorted(self, uid: str, user_id: int | None = None) -> dict:
         """Decline unsorted
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-decline
         Args:
             uid (str): unsorted object uid
-            user_id (int): user id
+            user_id (Optional[int], optional): user id. Defaults to None.
     
         Returns:
             dict: {
@@ -422,16 +429,20 @@ class Unsorted(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/decline"
-        params = {"user_id": user_id}
+        params = {}
+        if user_id is not None:
+            params["user_id"] = user_id
         return self._send_api_request("delete", url, params)
 
-    def link_unsorted(self, uid: str, user_id: int, link: dict) -> dict:
+    def link_unsorted(
+        self, uid: str, link: dict, user_id: int | None = None
+    ) -> dict:
         """Link unsorted to another entity
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-link
         Args:
             uid (str): unsorted object uid
-            user_id (int): user id
             link (dict): link object like {'entity_id': 123, 'entity_type': 'leads'}
+            user_id (Optional[int], optional): user id. Defaults to None.
     
         Returns:
             dict: {
@@ -451,7 +462,9 @@ class Unsorted(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/link"
-        params = {"user_id": user_id, "link": link}
+        params: dict = {"link": link}
+        if user_id is not None:
+            params["user_id"] = user_id
         return self._send_api_request("post", url, params)
 
     def get_summary_unsorted(
@@ -577,23 +590,29 @@ class Unsorted(Entity):
         return await self._create_unsorted_async(entity="form", **params)
 
     async def accept_unsorted_async(
-        self, uid: str, user_id: int, status_id: int
+        self, uid: str, user_id: int | None = None, status_id: int | None = None
     ) -> dict:
         """Async version of accept_unsorted."""
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/accept"
         params = self._build_accept_unsorted_params(user_id, status_id)
         return await self._send_api_request_async("post", url, params)
 
-    async def decline_unsorted_async(self, uid: str, user_id: int) -> dict:
+    async def decline_unsorted_async(self, uid: str, user_id: int | None = None) -> dict:
         """Async version of decline_unsorted."""
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/decline"
-        params = {"user_id": user_id}
+        params = {}
+        if user_id is not None:
+            params["user_id"] = user_id
         return await self._send_api_request_async("delete", url, params)
 
-    async def link_unsorted_async(self, uid: str, user_id: int, link: dict) -> dict:
+    async def link_unsorted_async(
+        self, uid: str, link: dict, user_id: int | None = None
+    ) -> dict:
         """Async version of link_unsorted."""
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/link"
-        params = {"user_id": user_id, "link": link}
+        params: dict = {"link": link}
+        if user_id is not None:
+            params["user_id"] = user_id
         return await self._send_api_request_async("post", url, params)
 
     async def get_summary_unsorted_async(

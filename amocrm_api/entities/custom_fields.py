@@ -410,3 +410,267 @@ class CustomFields(Entity):
         self, catalog_id: int, custom_fields: list
     ) -> dict:
         return self._update_custom_fields(f"catalogs/{catalog_id}", custom_fields)
+
+    def _delete_custom_field(
+        self, entity_type: str, custom_field_id: int
+    ) -> dict:
+        """Delete custom field by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/custom-fields#custom-fields-delete
+        """
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/{custom_field_id}"
+        return self._send_api_request("delete", url)
+
+    def delete_leads_custom_field(self, custom_field_id: int) -> dict:
+        return self._delete_custom_field("leads", custom_field_id)
+
+    def delete_contacts_custom_field(self, custom_field_id: int) -> dict:
+        return self._delete_custom_field("contacts", custom_field_id)
+
+    def delete_companies_custom_field(self, custom_field_id: int) -> dict:
+        return self._delete_custom_field("companies", custom_field_id)
+
+    def delete_customers_custom_field(self, custom_field_id: int) -> dict:
+        return self._delete_custom_field("customers", custom_field_id)
+
+    def delete_catalog_custom_field(
+        self, catalog_id: int, custom_field_id: int
+    ) -> dict:
+        return self._delete_custom_field(
+            f"catalogs/{catalog_id}", custom_field_id
+        )
+
+    def delete_customers_segments_custom_field(
+        self, custom_field_id: int
+    ) -> dict:
+        return self._delete_custom_field(
+            "customers/segments", custom_field_id
+        )
+
+    async def _delete_custom_field_async(
+        self, entity_type: str, custom_field_id: int
+    ) -> dict:
+        """Async version of _delete_custom_field."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/{custom_field_id}"
+        return await self._send_api_request_async("delete", url)
+
+    async def delete_leads_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._delete_custom_field_async("leads", custom_field_id)
+
+    async def delete_contacts_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._delete_custom_field_async("contacts", custom_field_id)
+
+    async def delete_companies_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._delete_custom_field_async("companies", custom_field_id)
+
+    async def delete_customers_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._delete_custom_field_async("customers", custom_field_id)
+
+    async def delete_catalog_custom_field_async(
+        self, catalog_id: int, custom_field_id: int
+    ) -> dict:
+        return await self._delete_custom_field_async(
+            f"catalogs/{catalog_id}", custom_field_id
+        )
+
+    async def delete_customers_segments_custom_field_async(
+        self, custom_field_id: int
+    ) -> dict:
+        return await self._delete_custom_field_async(
+            "customers/segments", custom_field_id
+        )
+
+    def _get_custom_field_groups(
+        self, entity_type: str, group_id: str | None = None
+    ) -> dict:
+        """Get custom field groups
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/custom-fields#custom-field-groups
+        """
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups"
+        if group_id is not None:
+            url = f"{url}/{group_id}"
+        return self._send_api_request("get", url)
+
+    def get_leads_custom_field_groups(
+        self, group_id: str | None = None
+    ) -> dict:
+        return self._get_custom_field_groups("leads", group_id)
+
+    def get_contacts_custom_field_groups(
+        self, group_id: str | None = None
+    ) -> dict:
+        return self._get_custom_field_groups("contacts", group_id)
+
+    def get_companies_custom_field_groups(
+        self, group_id: str | None = None
+    ) -> dict:
+        return self._get_custom_field_groups("companies", group_id)
+
+    def get_customers_custom_field_groups(
+        self, group_id: str | None = None
+    ) -> dict:
+        return self._get_custom_field_groups("customers", group_id)
+
+    async def _get_custom_field_groups_async(
+        self, entity_type: str, group_id: str | None = None
+    ) -> dict:
+        """Async version of _get_custom_field_groups."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups"
+        if group_id is not None:
+            url = f"{url}/{group_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def get_leads_custom_field_groups_async(
+        self, group_id: str | None = None
+    ) -> dict:
+        return await self._get_custom_field_groups_async("leads", group_id)
+
+    async def get_contacts_custom_field_groups_async(
+        self, group_id: str | None = None
+    ) -> dict:
+        return await self._get_custom_field_groups_async("contacts", group_id)
+
+    async def get_companies_custom_field_groups_async(
+        self, group_id: str | None = None
+    ) -> dict:
+        return await self._get_custom_field_groups_async("companies", group_id)
+
+    async def get_customers_custom_field_groups_async(
+        self, group_id: str | None = None
+    ) -> dict:
+        return await self._get_custom_field_groups_async("customers", group_id)
+
+    def _create_custom_field_groups(
+        self, entity_type: str, groups: list
+    ) -> dict:
+        """Create custom field groups
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/custom-fields#custom-field-groups
+        """
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups"
+        return self._send_api_request("post", url, groups)
+
+    def create_leads_custom_field_groups(self, groups: list) -> dict:
+        return self._create_custom_field_groups("leads", groups)
+
+    def create_contacts_custom_field_groups(self, groups: list) -> dict:
+        return self._create_custom_field_groups("contacts", groups)
+
+    def create_companies_custom_field_groups(self, groups: list) -> dict:
+        return self._create_custom_field_groups("companies", groups)
+
+    def create_customers_custom_field_groups(self, groups: list) -> dict:
+        return self._create_custom_field_groups("customers", groups)
+
+    async def _create_custom_field_groups_async(
+        self, entity_type: str, groups: list
+    ) -> dict:
+        """Async version of _create_custom_field_groups."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups"
+        return await self._send_api_request_async("post", url, groups)
+
+    async def create_leads_custom_field_groups_async(self, groups: list) -> dict:
+        return await self._create_custom_field_groups_async("leads", groups)
+
+    async def create_contacts_custom_field_groups_async(self, groups: list) -> dict:
+        return await self._create_custom_field_groups_async("contacts", groups)
+
+    async def create_companies_custom_field_groups_async(self, groups: list) -> dict:
+        return await self._create_custom_field_groups_async("companies", groups)
+
+    async def create_customers_custom_field_groups_async(self, groups: list) -> dict:
+        return await self._create_custom_field_groups_async("customers", groups)
+
+    def _update_custom_field_groups(
+        self, entity_type: str, group_id: str, group: dict
+    ) -> dict:
+        """Update custom field group by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/custom-fields#custom-field-groups
+        """
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups/{group_id}"
+        )
+        return self._send_api_request("patch", url, group)
+
+    def update_leads_custom_field_group(self, group_id: str, group: dict) -> dict:
+        return self._update_custom_field_groups("leads", group_id, group)
+
+    def update_contacts_custom_field_group(self, group_id: str, group: dict) -> dict:
+        return self._update_custom_field_groups("contacts", group_id, group)
+
+    def update_companies_custom_field_group(self, group_id: str, group: dict) -> dict:
+        return self._update_custom_field_groups("companies", group_id, group)
+
+    def update_customers_custom_field_group(self, group_id: str, group: dict) -> dict:
+        return self._update_custom_field_groups("customers", group_id, group)
+
+    async def _update_custom_field_groups_async(
+        self, entity_type: str, group_id: str, group: dict
+    ) -> dict:
+        """Async version of _update_custom_field_groups."""
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups/{group_id}"
+        )
+        return await self._send_api_request_async("patch", url, group)
+
+    async def update_leads_custom_field_group_async(
+        self, group_id: str, group: dict
+    ) -> dict:
+        return await self._update_custom_field_groups_async("leads", group_id, group)
+
+    async def update_contacts_custom_field_group_async(
+        self, group_id: str, group: dict
+    ) -> dict:
+        return await self._update_custom_field_groups_async("contacts", group_id, group)
+
+    async def update_companies_custom_field_group_async(
+        self, group_id: str, group: dict
+    ) -> dict:
+        return await self._update_custom_field_groups_async("companies", group_id, group)
+
+    async def update_customers_custom_field_group_async(
+        self, group_id: str, group: dict
+    ) -> dict:
+        return await self._update_custom_field_groups_async("customers", group_id, group)
+
+    def _delete_custom_field_group(
+        self, entity_type: str, group_id: str
+    ) -> dict:
+        """Delete custom field group by id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/custom-fields#custom-field-groups
+        """
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups/{group_id}"
+        )
+        return self._send_api_request("delete", url)
+
+    def delete_leads_custom_field_group(self, group_id: str) -> dict:
+        return self._delete_custom_field_group("leads", group_id)
+
+    def delete_contacts_custom_field_group(self, group_id: str) -> dict:
+        return self._delete_custom_field_group("contacts", group_id)
+
+    def delete_companies_custom_field_group(self, group_id: str) -> dict:
+        return self._delete_custom_field_group("companies", group_id)
+
+    def delete_customers_custom_field_group(self, group_id: str) -> dict:
+        return self._delete_custom_field_group("customers", group_id)
+
+    async def _delete_custom_field_group_async(
+        self, entity_type: str, group_id: str
+    ) -> dict:
+        """Async version of _delete_custom_field_group."""
+        url = (
+            f"{self.crm_url}/api/v4/{entity_type}/custom_fields/groups/{group_id}"
+        )
+        return await self._send_api_request_async("delete", url)
+
+    async def delete_leads_custom_field_group_async(self, group_id: str) -> dict:
+        return await self._delete_custom_field_group_async("leads", group_id)
+
+    async def delete_contacts_custom_field_group_async(self, group_id: str) -> dict:
+        return await self._delete_custom_field_group_async("contacts", group_id)
+
+    async def delete_companies_custom_field_group_async(self, group_id: str) -> dict:
+        return await self._delete_custom_field_group_async("companies", group_id)
+
+    async def delete_customers_custom_field_group_async(self, group_id: str) -> dict:
+        return await self._delete_custom_field_group_async("customers", group_id)

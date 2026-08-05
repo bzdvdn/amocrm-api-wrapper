@@ -97,3 +97,115 @@ class Sources(Entity):
         """Async version of delete_sources."""
         url = f"{self.crm_url}/api/v4/sources"
         return await self._send_api_request_async("delete", url, sources)
+
+    def _build_get_website_buttons_url(
+        self,
+        page: int,
+        limit: int,
+        with_params: list | None,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/website_buttons"
+        params: dict = {"page": page, "limit": limit}
+        if with_params:
+            params["with"] = ",".join(param for param in with_params)
+        return f"{url}?{urlencode(params)}"
+
+    def _build_get_website_button_url(
+        self, source_id: int, with_params: list | None
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/website_buttons/{source_id}"
+        if with_params:
+            url = f"{url}?with={','.join(param for param in with_params)}"
+        return url
+
+    def get_website_buttons(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        with_params: list | None = None,
+    ) -> dict:
+        """Get CRM Plugin list
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#website-buttons-list
+        Args:
+            page (int, optional): number of page. Defaults to 1.
+            limit (int, optional): limit rows. Defaults to 250.
+            with_params (Optional[list], optional): with params (scripts). Defaults to None.
+        """
+        url = self._build_get_website_buttons_url(page, limit, with_params)
+        return self._send_api_request("get", url)
+
+    def get_website_button(
+        self, source_id: int, with_params: list | None = None
+    ) -> dict:
+        """Get CRM Plugin by source id
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#website-buttons-detail
+        Args:
+            source_id (int): id of source
+            with_params (Optional[list], optional): with params (scripts). Defaults to None.
+        """
+        url = self._build_get_website_button_url(source_id, with_params)
+        return self._send_api_request("get", url)
+
+    def create_website_button(self, params: dict) -> dict:
+        """Create CRM Plugin (website button)
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#website-buttons-add
+        Args:
+            params (dict): {'pipeline_id': int, 'trusted_websites': list, 'is_used_in_app': bool}
+        """
+        url = f"{self.crm_url}/api/v4/website_buttons"
+        return self._send_api_request("post", url, params)
+
+    def update_website_button(self, source_id: int, params: dict) -> dict:
+        """Update CRM Plugin (add trusted websites)
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#website-buttons-edit
+        Args:
+            source_id (int): id of source
+            params (dict): {'trusted_websites': {'add': ['my-website.com']}}
+        """
+        url = f"{self.crm_url}/api/v4/website_buttons/{source_id}"
+        return self._send_api_request("patch", url, params)
+
+    def connect_online_chat_to_website_button(self, source_id: int) -> dict:
+        """Connect online chat to CRM Plugin
+        Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#website-buttons-online-chat
+        Args:
+            source_id (int): id of source
+        """
+        url = f"{self.crm_url}/api/v4/website_buttons/{source_id}/online_chat"
+        return self._send_api_request("post", url)
+
+    async def get_website_buttons_async(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        with_params: list | None = None,
+    ) -> dict:
+        """Async version of get_website_buttons."""
+        url = self._build_get_website_buttons_url(page, limit, with_params)
+        return await self._send_api_request_async("get", url)
+
+    async def get_website_button_async(
+        self, source_id: int, with_params: list | None = None
+    ) -> dict:
+        """Async version of get_website_button."""
+        url = self._build_get_website_button_url(source_id, with_params)
+        return await self._send_api_request_async("get", url)
+
+    async def create_website_button_async(self, params: dict) -> dict:
+        """Async version of create_website_button."""
+        url = f"{self.crm_url}/api/v4/website_buttons"
+        return await self._send_api_request_async("post", url, params)
+
+    async def update_website_button_async(
+        self, source_id: int, params: dict
+    ) -> dict:
+        """Async version of update_website_button."""
+        url = f"{self.crm_url}/api/v4/website_buttons/{source_id}"
+        return await self._send_api_request_async("patch", url, params)
+
+    async def connect_online_chat_to_website_button_async(
+        self, source_id: int
+    ) -> dict:
+        """Async version of connect_online_chat_to_website_button."""
+        url = f"{self.crm_url}/api/v4/website_buttons/{source_id}/online_chat"
+        return await self._send_api_request_async("post", url)
