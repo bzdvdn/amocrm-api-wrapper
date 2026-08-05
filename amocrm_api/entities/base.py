@@ -136,6 +136,19 @@ class Entity:
             )
             sleeper(delay)
             return self._send_api_request(method, url, data, _retry_counter + 1)
+        if response.status_code >= 500:
+            if _retry_counter >= self.max_retries:
+                logger.error("%s http error after %s retries", response.status_code, _retry_counter)
+                raise AmoException({"error": "server error"}, code=response.status_code)
+            delay = self.retry_sleep_base * (2 ** _retry_counter)
+            logger.warning(
+                "%s http error, sleep %s sec, retry %s",
+                response.status_code,
+                delay,
+                _retry_counter + 1,
+            )
+            sleeper(delay)
+            return self._send_api_request(method, url, data, _retry_counter + 1)
         try:
             body = self._parse_response_body(response)
         except JSONDecodeError as e:
@@ -161,6 +174,21 @@ class Entity:
             delay = self._retry_after_delay(response, _retry_counter)
             logger.warning(
                 "429 http error, sleep %s sec, retry %s",
+                delay,
+                _retry_counter + 1,
+            )
+            await asyncio.sleep(delay)
+            return await self._send_api_request_async(
+                method, url, data, _retry_counter + 1
+            )
+        if response.status_code >= 500:
+            if _retry_counter >= self.max_retries:
+                logger.error("%s http error after %s retries", response.status_code, _retry_counter)
+                raise AmoException({"error": "server error"}, code=response.status_code)
+            delay = self.retry_sleep_base * (2 ** _retry_counter)
+            logger.warning(
+                "%s http error, sleep %s sec, retry %s",
+                response.status_code,
                 delay,
                 _retry_counter + 1,
             )

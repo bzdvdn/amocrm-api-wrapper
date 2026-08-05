@@ -221,6 +221,30 @@ CASES = [
     ContractCase("install_widget", ("amo_dropbox",), {"settings": {"login": "user"}}, "post",
                  "/api/v4/widgets/amo_dropbox", body={"settings": {"login": "user"}}),
     ContractCase("uninstall_widget", ("amo_dropbox",), {}, "delete", "/api/v4/widgets/amo_dropbox"),
+    # loss reasons
+    ContractCase("get_loss_reasons", (), {}, "get", "/api/v4/leads/loss_reasons"),
+    ContractCase("get_loss_reason", (5,), {}, "get", "/api/v4/leads/loss_reasons/5"),
+    ContractCase("create_loss_reasons", ([{"name": "reason"}],), {}, "post",
+                 "/api/v4/leads/loss_reasons", body=[{"name": "reason"}]),
+    ContractCase("update_loss_reasons", ([{"id": 5, "name": "reason"}],), {}, "patch",
+                 "/api/v4/leads/loss_reasons", body=[{"id": 5, "name": "reason"}]),
+    ContractCase("delete_loss_reason", (5,), {}, "delete", "/api/v4/leads/loss_reasons/5"),
+    # sources
+    ContractCase("get_sources", (), {}, "get", "/api/v4/sources"),
+    ContractCase("get_source", (5,), {}, "get", "/api/v4/sources/5"),
+    ContractCase("create_sources", ([{"name": "source"}],), {}, "post",
+                 "/api/v4/sources", body=[{"name": "source"}]),
+    ContractCase("update_sources", ([{"id": 5, "name": "source"}],), {}, "patch",
+                 "/api/v4/sources", body=[{"id": 5, "name": "source"}]),
+    ContractCase("delete_sources", ([{"id": 5}],), {}, "delete",
+                 "/api/v4/sources", body=[{"id": 5}]),
+    # chats
+    ContractCase("get_chats", (), {}, "get", "/api/v4/chats"),
+    ContractCase("get_chat", (5,), {}, "get", "/api/v4/chats/5"),
+    ContractCase("create_chats", ([{"conversation_id": "conv-1"}],), {}, "post",
+                 "/api/v4/chats", body=[{"conversation_id": "conv-1"}]),
+    ContractCase("update_chat", (5, {"name": "chat"}), {}, "patch",
+                 "/api/v4/chats/5", body={"name": "chat"}),
 ]
 
 

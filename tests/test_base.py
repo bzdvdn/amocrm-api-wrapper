@@ -104,6 +104,27 @@ class TestSendApiRequest(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 429)
 
     @mock.patch("amocrm_api.entities.base.sleep")
+    def test_5xx_retries_then_succeeds(self, mock_sleep):
+        client = make_client()
+        with mock.patch.object(client._session, "get") as mock_get:
+            mock_get.side_effect = [
+                FakeResponse(status_code=503),
+                FakeResponse(body=json.dumps({"ok": True}).encode()),
+            ]
+            result = client._send_api_request("get", "http://x")
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(mock_get.call_count, 2)
+
+    @mock.patch("amocrm_api.entities.base.sleep")
+    def test_5xx_exhaustion_raises(self, mock_sleep):
+        client = make_client()
+        with mock.patch.object(client._session, "get") as mock_get:
+            mock_get.side_effect = [FakeResponse(status_code=500)] * 5
+            with self.assertRaises(AmoException) as ctx:
+                client._send_api_request("get", "http://x")
+        self.assertEqual(ctx.exception.code, 500)
+
+    @mock.patch("amocrm_api.entities.base.sleep")
     def test_connection_error_retries_then_reraises(self, mock_sleep):
         client = make_client()
         with mock.patch.object(client._session, "get") as mock_get, mock.patch.object(
@@ -165,6 +186,45 @@ class TestSendApiRequestAsync(unittest.TestCase):
         self.assertEqual(result, {"ok": True})
         self.assertEqual(mock_get.call_count, 4)
         self.assertEqual(mock_sleep.call_count, 3)
+
+    @mock.patch("amocrm_api.entities.base.asyncio.sleep")
+    def test_5xx_retries_then_succeeds(self, mock_sleep):
+        import asyncio
+
+        async def sleep(*args):
+            return None
+
+        mock_sleep.side_effect = sleep
+        client = make_client()
+        client._async_session = mock.Mock()
+        with mock.patch.object(
+            client._async_session, "get", new=mock.AsyncMock()
+        ) as mock_get:
+            mock_get.side_effect = [
+                FakeResponse(status_code=503),
+                FakeResponse(body=json.dumps({"ok": True}).encode()),
+            ]
+            result = asyncio.run(self._call(client, "get", "http://x"))
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(mock_get.call_count, 2)
+
+    @mock.patch("amocrm_api.entities.base.asyncio.sleep")
+    def test_5xx_exhaustion_raises(self, mock_sleep):
+        import asyncio
+
+        async def sleep(*args):
+            return None
+
+        mock_sleep.side_effect = sleep
+        client = make_client()
+        client._async_session = mock.Mock()
+        with mock.patch.object(
+            client._async_session, "get", new=mock.AsyncMock()
+        ) as mock_get:
+            mock_get.side_effect = [FakeResponse(status_code=500)] * 5
+            with self.assertRaises(AmoException) as ctx:
+                asyncio.run(self._call(client, "get", "http://x"))
+        self.assertEqual(ctx.exception.code, 500)
 
     @mock.patch("amocrm_api.entities.base.asyncio.sleep")
     def test_connection_error_retries_then_reraises(self, mock_sleep):

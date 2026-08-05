@@ -103,8 +103,15 @@ twin with the `_async` suffix; each file ends with an async usage example:
 | Pipelines | [docs/pipelines.md](docs/pipelines.md) |
 | Contacts | [docs/contacts.md](docs/contacts.md) |
 | Companies | [docs/companies.md](docs/companies.md) |
+| Customers | [docs/customers.md](docs/customers.md) |
 | Catalogs | [docs/catalogs.md](docs/catalogs.md) |
 | Tasks | [docs/tasks.md](docs/tasks.md) |
+| Notes | [docs/notes.md](docs/notes.md) |
+| Events | [docs/events.md](docs/events.md) |
+| Tags | [docs/tags.md](docs/tags.md) |
+| Loss reasons | [docs/loss_reasons.md](docs/loss_reasons.md) |
+| Sources | [docs/sources.md](docs/sources.md) |
+| Chats | [docs/chats.md](docs/chats.md) |
 | Users | [docs/users.md](docs/users.md) |
 | Webhooks | [docs/webhooks.md](docs/webhooks.md) |
 | Widgets | [docs/widgets.md](docs/widgets.md) |

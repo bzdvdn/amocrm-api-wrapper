@@ -18,13 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for both sync and async variants.
 - `uv` packaging via `pyproject.toml` / `uv.lock`, replacing `setup.py` and
   `requirements.txt`.
+- New entity `LossReasons`: list, get, create, update, delete.
+- New entity `Sources`: list, get, create, update, delete.
+- New entity `Chats`: list, get, create, update.
 
 ### Changed
 
 - HTTP client migrated to `httpx` for the async API.
 - Strict mypy typing enabled (`disallow_untyped_defs`), types modernized to
   PEP 604 (`Optional`/`Union` -> `X | None`), stale `# type: ignore` removed.
-- README split into `docs/` with per-entity references; async examples added.
+- README split into `docs/` with per-entity references; async examples added;
+  docs added for customers, notes, events, tags, loss_reasons, sources and chats.
 - Package version bumped from `0.0.20` to `1.0.0`.
 
 ### Fixed
@@ -32,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserve zero timestamps in filters (e.g. `updated_at__from=0`).
 - `link_unsorted` URL was missing a slash between `crm_url` and `api/v4/...`.
 - `_mask` and `__str__` typing.
+
+### Security
+
+- OAuth client auto-refreshes the access token on a `401` response and
+  retries the request once (existing behaviour, covered by tests).
+
+### Retry
+
+- Retry with exponential backoff now also applies to `5xx` responses in
+  addition to `429` and connection errors.
 
 ## [0.0.20] - 2026
 

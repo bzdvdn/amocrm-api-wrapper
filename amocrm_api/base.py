@@ -1,13 +1,16 @@
 from .entities import (
     Catalogs,
+    Chats,
     Companies,
     Contacts,
     Customers,
     CustomFields,
     Events,
     Leads,
+    LossReasons,
     Notes,
     Pipelines,
+    Sources,
     Tags,
     Tasks,
     Unsorted,
@@ -34,5 +37,8 @@ class BaseClient(
     Tags,
     Events,
     Notes,
+    LossReasons,
+    Sources,
+    Chats,
 ):
     """Aggregates all amocrm entities into a single client interface."""
