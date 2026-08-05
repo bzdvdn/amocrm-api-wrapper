@@ -1,4 +1,6 @@
 
+from urllib.parse import urlencode
+
 from .base import Entity
 
 
@@ -7,33 +9,110 @@ class CustomFields(Entity):
         self,
         entity: str,
         page: int | None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}/custom_fields"
+        params: dict = {}
         if page:
-            url = f"{url}?page={page}"
+            params["page"] = page
+        if limit is not None:
+            params["limit"] = limit
+        if field_type:
+            params["filter[type][0]"] = field_type
+        if order:
+            order_query = {f"order[{k}]": v for k, v in order.items()}
+            params.update(order_query)
+        if params:
+            url = f"{url}?{urlencode(params)}"
         return url
 
-    def _get_custom_fields(self, entity: str, page: int | None = None) -> dict:
-        url = self._build_get_custom_fields_url(entity, page)
+    def _get_custom_fields(
+        self,
+        entity: str,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        url = self._build_get_custom_fields_url(entity, page, limit, field_type, order)
         return self._send_api_request("get", url)
 
-    def get_contacts_custom_fields(self, page: int | None = None) -> dict:
-        return self._get_custom_fields("contacts", page=page)
+    def get_contacts_custom_fields(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            "contacts", page=page, limit=limit, field_type=field_type, order=order
+        )
 
-    def get_leads_custom_fields(self, page: int | None = None) -> dict:
-        return self._get_custom_fields("leads", page=page)
+    def get_leads_custom_fields(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            "leads", page=page, limit=limit, field_type=field_type, order=order
+        )
 
-    def get_companies_custom_fields(self, page: int | None = None) -> dict:
-        return self._get_custom_fields("companies", page=page)
+    def get_companies_custom_fields(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            "companies", page=page, limit=limit, field_type=field_type, order=order
+        )
 
-    def get_customers_custom_fields(self, page: int | None = None) -> dict:
-        return self._get_custom_fields("customers", page=page)
+    def get_customers_custom_fields(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            "customers", page=page, limit=limit, field_type=field_type, order=order
+        )
 
-    def get_customer_segments_custom_fields(self, page: int | None = None) -> dict:
-        return self._get_custom_fields("customers/segments", page=page)
+    def get_customer_segments_custom_fields(
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            "customers/segments",
+            page=page,
+            limit=limit,
+            field_type=field_type,
+            order=order,
+        )
 
-    def get_catalog_custom_fields(self, catalog_id: int) -> dict:
-        return self._get_custom_fields(f"catalogs/{catalog_id}")
+    def get_catalog_custom_fields(
+        self,
+        catalog_id: int,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return self._get_custom_fields(
+            f"catalogs/{catalog_id}",
+            page=page,
+            limit=limit,
+            field_type=field_type,
+            order=order,
+        )
 
     def _get_custom_field_by_entity_type(
         self, entity_type: str, custom_field_id: int
@@ -250,39 +329,91 @@ class CustomFields(Entity):
         return self._send_api_request("patch", url, custom_fields)
 
     async def _get_custom_fields_async(
-        self, entity: str, page: int | None = None
+        self,
+        entity: str,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Async version of _get_custom_fields."""
-        url = self._build_get_custom_fields_url(entity, page)
+        url = self._build_get_custom_fields_url(entity, page, limit, field_type, order)
         return await self._send_api_request_async("get", url)
 
     async def get_contacts_custom_fields_async(
-        self, page: int | None = None
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
-        return await self._get_custom_fields_async("contacts", page=page)
+        return await self._get_custom_fields_async(
+            "contacts", page=page, limit=limit, field_type=field_type, order=order
+        )
 
     async def get_leads_custom_fields_async(
-        self, page: int | None = None
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
-        return await self._get_custom_fields_async("leads", page=page)
+        return await self._get_custom_fields_async(
+            "leads", page=page, limit=limit, field_type=field_type, order=order
+        )
 
     async def get_companies_custom_fields_async(
-        self, page: int | None = None
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
-        return await self._get_custom_fields_async("companies", page=page)
+        return await self._get_custom_fields_async(
+            "companies", page=page, limit=limit, field_type=field_type, order=order
+        )
 
     async def get_customers_custom_fields_async(
-        self, page: int | None = None
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
-        return await self._get_custom_fields_async("customers", page=page)
+        return await self._get_custom_fields_async(
+            "customers", page=page, limit=limit, field_type=field_type, order=order
+        )
 
     async def get_customer_segments_custom_fields_async(
-        self, page: int | None = None
+        self,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
     ) -> dict:
-        return await self._get_custom_fields_async("customers/segments", page=page)
+        return await self._get_custom_fields_async(
+            "customers/segments",
+            page=page,
+            limit=limit,
+            field_type=field_type,
+            order=order,
+        )
 
-    async def get_catalog_custom_fields_async(self, catalog_id: int) -> dict:
-        return await self._get_custom_fields_async(f"catalogs/{catalog_id}")
+    async def get_catalog_custom_fields_async(
+        self,
+        catalog_id: int,
+        page: int | None = None,
+        limit: int | None = None,
+        field_type: str | None = None,
+        order: dict | None = None,
+    ) -> dict:
+        return await self._get_custom_fields_async(
+            f"catalogs/{catalog_id}",
+            page=page,
+            limit=limit,
+            field_type=field_type,
+            order=order,
+        )
 
     async def _get_custom_field_by_entity_type_async(
         self, entity_type: str, custom_field_id: int

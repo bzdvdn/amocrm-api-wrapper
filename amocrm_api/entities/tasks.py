@@ -24,7 +24,7 @@ class Tasks(Entity):
         Args:
             page (int, optional): number of page. Defaults to 1.
             limit (int, optional): limit row. Defaults to 250.
-            filters (Optional[dict], optional): {'[updated_at][from]': <timestamp>}. Defaults to None.
+            filters (Optional[dict], optional): {'updated_at__from': <timestamp>, 'updated_at__to': <timestamp>}. Defaults to None.
             order (Optional[dict], optional): {'updated_at': <timestamp>}. Defaults to None.
     
         Returns:

@@ -232,7 +232,7 @@ class Leads(Entity):
             limit (int, optional): limit of rows. Defaults to 250.
             page (int, optional): number of page. Defaults to 1.
             with_params (Optional[list], optional): params. Defaults to None.
-            filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
+            filters (Optional[dict], optional): filter params like {'updated_at__from': '<timestamp>', 'updated_at__to': '<timestamp>', 'id': [1, 2]}. Defaults to None.
             filter_ids (Optional[list], optional): filter ids like [1,2,2310]. Defaults to None.
             order (Optional[dict], optional): order params like {'update_at': 'asc'}. Defaults to None.
     

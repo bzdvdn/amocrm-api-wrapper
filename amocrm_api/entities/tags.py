@@ -11,6 +11,7 @@ class Tags(Entity):
         page: int = 1,
         limit: int = 250,
         filters: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Get tags by entity_type
         Doc: https://www.amocrm.ru/developers/content/crm_platform/tags-api#tags-list
@@ -18,7 +19,8 @@ class Tags(Entity):
             entity_type (str): leads|contacts|companies|customers
             page (int, optional): page number. Defaults to 1.
             limit (int, optional): limit of rows. Defaults to 250.
-            filters (Optional[dict], optional): {'[name]': <name>}. Defaults to None.
+            filters (Optional[dict], optional): {'name': '<name>', 'id': [2707, 2709]}. Defaults to None.
+            query (Optional[str], optional): search query. Defaults to None.
     
         Returns:
             dict: {
@@ -45,7 +47,7 @@ class Tags(Entity):
                 }
             }
         """
-        params: dict = {"page": page, "limit": limit, "filters": filters}
+        params: dict = {"page": page, "limit": limit, "filters": filters, "query": query}
         return self._get_entities(f"{entity_type}/tags", **params)
 
     def add_tags_for_entity_type(self, entity_type: str, tags: list) -> dict:
@@ -87,9 +89,10 @@ class Tags(Entity):
         page: int = 1,
         limit: int = 250,
         filters: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Async version of get_tags_by_entity_type."""
-        params: dict = {"page": page, "limit": limit, "filters": filters}
+        params: dict = {"page": page, "limit": limit, "filters": filters, "query": query}
         return await self._get_entities_async(f"{entity_type}/tags", **params)
 
     def iter_tags_by_entity_type(

@@ -325,11 +325,14 @@ class Pipelines(Entity):
         url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
         return self._send_api_request("delete", url)
 
-    def get_pipeline_statuses(self, pipeline_id: int) -> dict:
+    def get_pipeline_statuses(
+        self, pipeline_id: int, with_params: list | None = None
+    ) -> dict:
         """return pipeline Statuses
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#statuses-list
         Args:
             pipeline_id (int): id of pipeline
+            with_params (Optional[list], optional): additional params, e.g. ["descriptions"]. Defaults to None.
         Returns:
             dict: {
             "_total_items": 1,
@@ -435,16 +438,25 @@ class Pipelines(Entity):
                     }
                 ]
             }
-        }
-        """
+         }
+         """
         url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return self._send_api_request("get", url)
 
-    def get_pipeline_status(self, pipeline_id: int, status_id: int) -> dict:
+    def get_pipeline_status(
+        self,
+        pipeline_id: int,
+        status_id: int,
+        with_params: list | None = None,
+    ) -> dict:
         """Get status
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#status-detail
         Args:
             pipeline_id (int): id of pipeline
+            status_id (int): id of status
+            with_params (Optional[list], optional): additional params, e.g. ["descriptions"]. Defaults to None.
             status_id (int): id of status
     
         Returns:
@@ -467,6 +479,8 @@ class Pipelines(Entity):
         url = (
             f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return self._send_api_request("get", url)
 
     def add_statuses_to_pipeline(self, pipeline_id: int, statuses: list) -> dict:
@@ -617,18 +631,27 @@ class Pipelines(Entity):
         url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
         return await self._send_api_request_async("delete", url)
 
-    async def get_pipeline_statuses_async(self, pipeline_id: int) -> dict:
+    async def get_pipeline_statuses_async(
+        self, pipeline_id: int, with_params: list | None = None
+    ) -> dict:
         """Async version of get_pipeline_statuses."""
         url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return await self._send_api_request_async("get", url)
 
     async def get_pipeline_status_async(
-        self, pipeline_id: int, status_id: int
+        self,
+        pipeline_id: int,
+        status_id: int,
+        with_params: list | None = None,
     ) -> dict:
         """Async version of get_pipeline_status."""
         url = (
             f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return await self._send_api_request_async("get", url)
 
     async def add_statuses_to_pipeline_async(

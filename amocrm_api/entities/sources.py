@@ -5,13 +5,22 @@ from .base import Entity
 
 class Sources(Entity):
     def _build_get_sources_url(
-        self, page: int, limit: int, with_params: list | None
+        self,
+        page: int,
+        limit: int,
+        with_params: list | None,
+        filter_by_external_id: int | str | bool | list | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/sources"
         params: dict = {"page": page, "limit": limit}
         if with_params:
             params["with"] = ",".join(param for param in with_params)
-        return f"{url}?{urlencode(params)}"
+        if filter_by_external_id is not None:
+            if isinstance(filter_by_external_id, list):
+                params["filter[external_id][]"] = filter_by_external_id
+            else:
+                params["filter[external_id]"] = filter_by_external_id
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _build_get_source_url(self, source_id: int) -> str:
         return f"{self.crm_url}/api/v4/sources/{source_id}"
@@ -21,6 +30,7 @@ class Sources(Entity):
         page: int = 1,
         limit: int = 250,
         with_params: list | None = None,
+        filter_by_external_id: int | str | bool | list | None = None,
     ) -> dict:
         """Get sources
         Doc: https://www.amocrm.ru/developers/content/crm_platform/sources-api#sources-list
@@ -28,8 +38,11 @@ class Sources(Entity):
             page (int, optional): number of page. Defaults to 1.
             limit (int, optional): limit rows. Defaults to 250.
             with_params (Optional[list], optional): with params. Defaults to None.
+            filter_by_external_id (Union[int, str, bool, list, None], optional): filter by external id. Defaults to None.
         """
-        url = self._build_get_sources_url(page, limit, with_params)
+        url = self._build_get_sources_url(
+            page, limit, with_params, filter_by_external_id
+        )
         return self._send_api_request("get", url)
 
     def get_source(self, source_id: int) -> dict:
@@ -73,9 +86,12 @@ class Sources(Entity):
         page: int = 1,
         limit: int = 250,
         with_params: list | None = None,
+        filter_by_external_id: int | str | bool | list | None = None,
     ) -> dict:
         """Async version of get_sources."""
-        url = self._build_get_sources_url(page, limit, with_params)
+        url = self._build_get_sources_url(
+            page, limit, with_params, filter_by_external_id
+        )
         return await self._send_api_request_async("get", url)
 
     async def get_source_async(self, source_id: int) -> dict:

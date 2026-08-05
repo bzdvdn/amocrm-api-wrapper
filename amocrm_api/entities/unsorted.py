@@ -45,7 +45,6 @@ class Unsorted(Entity):
             "source_uid": source_uid,
             "source_name": source_name,
             "metadata": metadata,
-            "contact": contact,
         }
         _embedded = {"contacts": [contact], "leads": [lead], "companies": [company]}
         params["_embedded"] = _embedded
@@ -344,7 +343,7 @@ class Unsorted(Entity):
         Doc: https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
         """
         params: dict = {k: v for k, v in locals().items() if k != "self"}
-        return self._create_unsorted(entity="form", **params)
+        return self._create_unsorted(entity="forms", **params)
 
     def accept_unsorted(
         self, uid: str, user_id: int | None = None, status_id: int | None = None
@@ -587,7 +586,7 @@ class Unsorted(Entity):
     ) -> dict:
         """Async version of create_unsorted_by_form."""
         params: dict = {k: v for k, v in locals().items() if k != "self"}
-        return await self._create_unsorted_async(entity="form", **params)
+        return await self._create_unsorted_async(entity="forms", **params)
 
     async def accept_unsorted_async(
         self, uid: str, user_id: int | None = None, status_id: int | None = None

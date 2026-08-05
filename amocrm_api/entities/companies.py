@@ -31,7 +31,7 @@ class Companies(Entity):
             limit (int, optional): limit of page. Defaults to 250.
             page (int, optional): page index. Defaults to 1.
             with_params (Optional[list], optional): with params(check dock). Defaults to None.
-            filters (Optional[dict], optional): dict filters like({'[updated_at][from]: "<timestamp>"'}). Defaults to None.
+            filters (Optional[dict], optional): dict filters like {'updated_at__from': '<timestamp>'}. Defaults to None.
             order (Optional[dict], optional): dict like - {'updated_at': 'asc'}. Defaults to None.
     
         Returns:

@@ -20,13 +20,9 @@ class Contacts(Entity):
         if limit is not None:
             params["limit"] = limit
         if filter_by_chat_ids:
-            params["filter[chat_id][]" if isinstance(filter_by_chat_ids, list) else "filter[chat_id]"] = (
-                filter_by_chat_ids
-            )
+            params["chat_id"] = filter_by_chat_ids
         if filter_by_contact_ids:
-            params["filter[contact_id][]" if isinstance(filter_by_contact_ids, list) else "filter[contact_id]"] = (
-                filter_by_contact_ids
-            )
+            params["contact_id"] = filter_by_contact_ids
         return f"{url}?{urlencode(params, doseq=True)}"
 
     def get_contacts_chats(
@@ -84,8 +80,8 @@ class Contacts(Entity):
             limit (int, optional): limit of rows. Defaults to 250.
             page (int, optional): number of page. Defaults to 1.
             with_params (Optional[list], optional): params. Defaults to None.
-            filters (Optional[dict], optional): filter params like {'[updated_at][from]': '<timestamp>'}. Defaults to None.
-            order (Optional[dict], optional): filter params like {'updated_at': 'asc'}. Defaults to None.
+            filters (Optional[dict], optional): filter params like {'updated_at__from': '<timestamp>', 'updated_at__to': '<timestamp>', 'id': [1, 2]}. Defaults to None.
+            order (Optional[dict], optional): order params like {'updated_at': 'asc'}. Defaults to None.
         Returns:
             dict:{
                 "_page": 1,

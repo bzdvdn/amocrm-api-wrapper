@@ -206,6 +206,7 @@ class Catalogs(Entity):
         page: int = 1,
         limit: int = 250,
         filters: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Get elements by catalog id
         Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-list
@@ -214,6 +215,7 @@ class Catalogs(Entity):
             page (int, optional): number of page. Defaults to 1.
             limit (int, optional): limit rows. Defaults to 250.
             filters (Optional[dict], optional): filter dict. Defaults to None.
+            query (Optional[str], optional): search query. Defaults to None.
     
         Returns:
             dict: {
@@ -295,7 +297,12 @@ class Catalogs(Entity):
                 }
             }
         """
-        params: dict = {"page": page, "limit": limit, "filters": filters}
+        params: dict = {
+            "page": page,
+            "limit": limit,
+            "filters": filters,
+            "query": query,
+        }
         entity = f"catalogs/{catalog_id}/elements"
         return self._get_entities(entity, **params)
 
@@ -512,9 +519,15 @@ class Catalogs(Entity):
         page: int = 1,
         limit: int = 250,
         filters: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Async version of get_catalog_elements."""
-        params: dict = {"page": page, "limit": limit, "filters": filters}
+        params: dict = {
+            "page": page,
+            "limit": limit,
+            "filters": filters,
+            "query": query,
+        }
         entity = f"catalogs/{catalog_id}/elements"
         return await self._get_entities_async(entity, **params)
 
