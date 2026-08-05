@@ -62,7 +62,7 @@ CASES = [
     ContractCase("get_company", (7,), {}, "get", "/api/v4/companies/7"),
     ContractCase("create_companies", ([{"name": "c"}],), {}, "post",
                  "/api/v4/companies", body=[{"name": "c"}]),
-    ContractCase("update_companies", ([{"id": 5, "name": "a"}],), {}, "post",
+    ContractCase("update_companies", ([{"id": 5, "name": "a"}],), {}, "patch",
                  "/api/v4/companies", body=[{"id": 5, "name": "a"}]),
     ContractCase("get_companies_links", (5,), {}, "get", "/api/v4/companies/5/links"),
     ContractCase("link_companies_entity", (5, [{"to_entity_id": 7, "to_entity_type": "contacts"}]), {}, "post",

@@ -54,7 +54,8 @@ class Entity:
 
     def close(self) -> None:
         """Close the underlying sync HTTP session."""
-        self._session.close()
+        if hasattr(self, "_session"):
+            self._session.close()
 
     async def close_async(self) -> None:
         """Close the underlying async HTTP session."""

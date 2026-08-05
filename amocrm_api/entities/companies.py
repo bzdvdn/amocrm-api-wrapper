@@ -240,7 +240,7 @@ class Companies(Entity):
     async def update_companies_async(self, companies: list) -> dict:
         """Async version of update_companies."""
         url = f"{self.crm_url}/api/v4/companies"
-        return await self._send_api_request_async("post", url, companies)
+        return await self._send_api_request_async("patch", url, companies)
 
     def update_companies(self, companies: list) -> dict:
         """Update companies
@@ -272,4 +272,4 @@ class Companies(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/companies"
-        return self._send_api_request("post", url, companies)
+        return self._send_api_request("patch", url, companies)
