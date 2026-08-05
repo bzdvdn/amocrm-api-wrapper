@@ -1,35 +1,35 @@
 from .base import Entity
-from .leads import Leads
-from .unsorted import Unsorted
-from .pipelines import Pipelines
-from .contacts import Contacts
-from .companies import Companies
-from .customers import Customers
 from .catalogs import Catalogs
+from .companies import Companies
+from .contacts import Contacts
 from .custom_fields import CustomFields
+from .customers import Customers
+from .events import Events
+from .leads import Leads
+from .notes import Notes
+from .pipelines import Pipelines
+from .tags import Tags
+from .tasks import Tasks
+from .unsorted import Unsorted
 from .users import Users
 from .webhooks import Webhooks
 from .widgets import Widgets
-from .tasks import Tasks
-from .tags import Tags
-from .events import Events
-from .notes import Notes
 
 __all__ = [
-    "Entity",
-    "Leads",
-    "Unsorted",
-    "Pipelines",
-    "Contacts",
-    "Companies",
-    "Customers",
     "Catalogs",
+    "Companies",
+    "Contacts",
     "CustomFields",
+    "Customers",
+    "Entity",
+    "Events",
+    "Leads",
+    "Notes",
+    "Pipelines",
+    "Tags",
+    "Tasks",
+    "Unsorted",
     "Users",
     "Webhooks",
-    "Widgets",
-    "Tasks",
-    "Tags",
-    "Events",
-    "Notes"
+    "Widgets"
 ]

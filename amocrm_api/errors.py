@@ -1,3 +1,5 @@
+from typing import Any
+
 _SECRET_KEYS = {
     "access_token",
     "refresh_token",
@@ -9,7 +11,7 @@ _SECRET_KEYS = {
 }
 
 
-def _mask(value):
+def _mask(value: Any) -> Any:
     if isinstance(value, dict):
         return {
             k: ("***" if str(k).lower() in _SECRET_KEYS else _mask(v))
@@ -21,12 +23,14 @@ def _mask(value):
 
 
 class AmoException(Exception):
-    def __init__(self, error_data: dict, code: int = 500, *args):
+    def __init__(
+        self, error_data: dict, code: int = 500, *args: Any
+    ) -> None:
         self.error_data = error_data
         self.code = code
-        super().__init__(args)
+        super().__init__(*args)
 
-    def __str__(self):
+    def __str__(self) -> str:
         error_message = ''.join(
             f'{k}: {v}' for k, v in _mask(self.error_data).items()
         )

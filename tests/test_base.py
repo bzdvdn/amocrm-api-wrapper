@@ -106,11 +106,12 @@ class TestSendApiRequest(unittest.TestCase):
     @mock.patch("amocrm_api.entities.base.sleep")
     def test_connection_error_retries_then_reraises(self, mock_sleep):
         client = make_client()
-        with mock.patch.object(client._session, "get") as mock_get:
+        with mock.patch.object(client._session, "get") as mock_get, mock.patch.object(
+            client, "_update_session"
+        ) as mock_update:
             mock_get.side_effect = ConnectError("boom")
-            with mock.patch.object(client, "_update_session") as mock_update:
-                with self.assertRaises(ConnectError):
-                    client._send_api_request("get", "http://x")
+            with self.assertRaises(ConnectError):
+                client._send_api_request("get", "http://x")
             self.assertEqual(mock_update.call_count, 3)
 
     def test_json_decode_error_raises_amo_exception(self):

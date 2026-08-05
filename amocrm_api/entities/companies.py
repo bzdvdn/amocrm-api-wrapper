@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Companies(Entity):
     def unlink_companies_entity(self, entity_id: int, objects: list) -> dict:
@@ -10,7 +12,7 @@ class Companies(Entity):
         return self._link_entities("companies", entity_id, objects)
 
     def get_companies_links(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         return self._get_entity_links("companies", entity_id, filters)
 
@@ -18,9 +20,9 @@ class Companies(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Get companies
         Doc: https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-list
@@ -183,7 +185,7 @@ class Companies(Entity):
         return await self._link_entities_async("companies", entity_id, objects)
 
     async def get_companies_links_async(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         """Async version of get_companies_links."""
         return await self._get_entity_links_async("companies", entity_id, filters)
@@ -192,13 +194,38 @@ class Companies(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Async version of get_companies."""
         params = {k: v for k, v in locals().items() if k != "self"}
         return await self._get_entities_async("companies", **params)
+
+    def iter_companies(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all companies across pages."""
+        return self._iter_entities(
+            "companies", limit, with_params, filters, None, order, "companies"
+        )
+
+    async def iter_companies_async(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_companies."""
+        async for company in self._iter_entities_async(
+            "companies", limit, with_params, filters, None, order, "companies"
+        ):
+            yield company
 
     async def get_company_async(self, company_id: int) -> dict:
         """Async version of get_company."""

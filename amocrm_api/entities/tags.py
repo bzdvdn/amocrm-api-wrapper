@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Tags(Entity):
     def get_tags_by_entity_type(
@@ -8,7 +10,7 @@ class Tags(Entity):
         entity_type: str,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> dict:
         """Get tags by entity_type
         Doc: https://www.amocrm.ru/developers/content/crm_platform/tags-api#tags-list
@@ -84,11 +86,34 @@ class Tags(Entity):
         entity_type: str,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> dict:
         """Async version of get_tags_by_entity_type."""
         params: dict = {"page": page, "limit": limit, "filters": filters}
         return await self._get_entities_async(f"{entity_type}/tags", **params)
+
+    def iter_tags_by_entity_type(
+        self,
+        entity_type: str,
+        limit: int = 250,
+        filters: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all tags of an entity type across pages."""
+        return self._iter_entities(
+            f"{entity_type}/tags", limit, None, filters, None, None, "tags"
+        )
+
+    async def iter_tags_by_entity_type_async(
+        self,
+        entity_type: str,
+        limit: int = 250,
+        filters: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_tags_by_entity_type."""
+        async for tag in self._iter_entities_async(
+            f"{entity_type}/tags", limit, None, filters, None, None, "tags"
+        ):
+            yield tag
 
     async def add_tags_for_entity_type_async(
         self, entity_type: str, tags: list

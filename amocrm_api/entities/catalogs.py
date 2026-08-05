@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Catalogs(Entity):
     def get_catalogs(self, page: int = 1, limit: int = 250) -> dict:
@@ -203,7 +205,7 @@ class Catalogs(Entity):
         catalog_id: int,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> dict:
         """Get elements by catalog id
         Doc: https://www.amocrm.ru/developers/content/crm_platform/catalogs-api#list-elements-list
@@ -509,12 +511,35 @@ class Catalogs(Entity):
         catalog_id: int,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> dict:
         """Async version of get_catalog_elements."""
         params: dict = {"page": page, "limit": limit, "filters": filters}
         entity = f"catalogs/{catalog_id}/elements"
         return await self._get_entities_async(entity, **params)
+
+    def iter_catalog_elements(
+        self,
+        catalog_id: int,
+        limit: int = 250,
+        filters: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all catalog elements across pages."""
+        entity = f"catalogs/{catalog_id}/elements"
+        return self._iter_entities(entity, limit, None, filters, None, None, "elements")
+
+    async def iter_catalog_elements_async(
+        self,
+        catalog_id: int,
+        limit: int = 250,
+        filters: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_catalog_elements."""
+        entity = f"catalogs/{catalog_id}/elements"
+        async for element in self._iter_entities_async(
+            entity, limit, None, filters, None, None, "elements"
+        ):
+            yield element
 
     async def get_catalog_element_async(
         self, catalog_id: int, element_id: int

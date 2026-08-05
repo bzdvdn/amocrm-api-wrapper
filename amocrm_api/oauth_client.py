@@ -1,12 +1,12 @@
 import asyncio
+from collections.abc import Callable
 from threading import Lock
-from typing import Callable, Optional
 
 import httpx
 from httpx import AsyncClient, Client
 
-from .errors import AmoException
 from .base import BaseClient, mask_token
+from .errors import AmoException
 
 
 class AmoOAuthClient(BaseClient):
@@ -18,7 +18,7 @@ class AmoOAuthClient(BaseClient):
         client_id: str,
         client_secret: str,
         redirect_uri: str,
-        token_store: Optional[Callable[[str, str], None]] = None,
+        token_store: Callable[[str, str], None] | None = None,
     ):
         self._access_token = access_token
         self._refresh_token = refresh_token
@@ -40,7 +40,7 @@ class AmoOAuthClient(BaseClient):
             'User-Agent': 'amocrm-api-client/1.0',
         }
 
-    def _init_session(self, params: Optional[dict] = None) -> Client:
+    def _init_session(self, params: dict | None = None) -> Client:
         session = Client(timeout=self.timeout)
         session.headers.update(self._auth_headers())
         if params:
@@ -48,7 +48,7 @@ class AmoOAuthClient(BaseClient):
         return session
 
     async def _init_async_session(
-        self, params: Optional[dict] = None
+        self, params: dict | None = None
     ) -> AsyncClient:
         session = AsyncClient(timeout=self.timeout)
         session.headers.update(self._auth_headers())
@@ -60,43 +60,51 @@ class AmoOAuthClient(BaseClient):
         self,
         method: str,
         url: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
+        _retry_counter: int = 0,
+        *,
         update_tokens: bool = False,
     ) -> dict:
         try:
-            response = super()._send_api_request(method, url, data)
-            return response
+            return super()._send_api_request(method, url, data, _retry_counter)
         except AmoException as e:
             if getattr(e, "code", None) == 401 and not update_tokens:
                 self.update_tokens()
-                return self._send_api_request(method, url, data, True)
+                return self._send_api_request(
+                    method, url, data, _retry_counter, update_tokens=True
+                )
             raise
 
     async def _send_api_request_async(
         self,
         method: str,
         url: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
+        _retry_counter: int = 0,
+        *,
         update_tokens: bool = False,
     ) -> dict:
         try:
-            response = await super()._send_api_request_async(method, url, data)
-            return response
+            return await super()._send_api_request_async(
+                method, url, data, _retry_counter
+            )
         except AmoException as e:
             if getattr(e, "code", None) == 401 and not update_tokens:
                 await self.update_tokens_async()
-                return await self._send_api_request_async(method, url, data, True)
+                return await self._send_api_request_async(
+                    method, url, data, _retry_counter, update_tokens=True
+                )
             raise
 
-    def update_session_auth_headers(self):
+    def update_session_auth_headers(self) -> None:
         self.update_session_params({'Authorization': f'Bearer {self.access_token}'})
 
-    async def update_session_auth_headers_async(self):
+    async def update_session_auth_headers_async(self) -> None:
         await self.update_session_params_async(
             {'Authorization': f'Bearer {self.access_token}'}
         )
 
-    def _refresh_tokens(self):
+    def _refresh_tokens(self) -> tuple[str, dict]:
         url = f'{self.crm_url}/oauth2/access_token'
         params = {
             'client_id': self.client_id,
@@ -107,7 +115,7 @@ class AmoOAuthClient(BaseClient):
         }
         return url, params
 
-    def update_tokens(self):
+    def update_tokens(self) -> None:
         with self._token_lock:
             url, params = self._refresh_tokens()
             r = httpx.post(url, json=params, timeout=self.timeout)
@@ -119,7 +127,7 @@ class AmoOAuthClient(BaseClient):
             if self.token_store is not None:
                 self.token_store(self.access_token, self.refresh_token)
 
-    async def update_tokens_async(self):
+    async def update_tokens_async(self) -> None:
         async with self._async_token_lock:
             url, params = self._refresh_tokens()
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -132,7 +140,7 @@ class AmoOAuthClient(BaseClient):
             if self.token_store is not None:
                 self.token_store(self.access_token, self.refresh_token)
 
-    def _update_token_params(self, access_token: str, refresh_token: str):
+    def _update_token_params(self, access_token: str, refresh_token: str) -> None:
         self._access_token = access_token
         self._refresh_token = refresh_token
 

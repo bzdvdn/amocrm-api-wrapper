@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Tasks(Entity):
     def _build_execution_task_params(
@@ -14,8 +16,8 @@ class Tasks(Entity):
         self,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Get tasks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/tasks-api#tasks-list
@@ -233,12 +235,35 @@ class Tasks(Entity):
         self,
         page: int = 1,
         limit: int = 250,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Async version of get_tasks."""
         params = {k: v for k, v in locals().items() if k != "self"}
         return await self._get_entities_async("tasks", **params)
+
+    def iter_tasks(
+        self,
+        limit: int = 250,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all tasks across pages."""
+        return self._iter_entities(
+            "tasks", limit, None, filters, None, order, "tasks"
+        )
+
+    async def iter_tasks_async(
+        self,
+        limit: int = 250,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_tasks."""
+        async for task in self._iter_entities_async(
+            "tasks", limit, None, filters, None, order, "tasks"
+        ):
+            yield task
 
     async def get_task_async(self, task_id: int) -> dict:
         """Async version of get_task."""

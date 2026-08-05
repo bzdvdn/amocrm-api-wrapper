@@ -1,6 +1,7 @@
+from urllib.parse import urlencode
+
 from .base import Entity
 
-from urllib.parse import urlencode
 
 class Users(Entity):
     def _build_get_users_url(

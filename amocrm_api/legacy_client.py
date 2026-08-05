@@ -2,10 +2,9 @@ from json import JSONDecodeError
 
 import httpx
 from httpx import AsyncClient, Client
-from typing import Optional
 
-from .errors import AmoException
 from .base import BaseClient, mask_token
+from .errors import AmoException
 
 
 class AmoLegacyClient(BaseClient):
@@ -22,7 +21,7 @@ class AmoLegacyClient(BaseClient):
         self.crm_url = crm_url if not crm_url.endswith('/') else crm_url[:-1]
         self._session = self._init_session()
 
-    def _init_session(self, headers: Optional[dict] = None) -> Client:
+    def _init_session(self, headers: dict | None = None) -> Client:
         """Init session
 
         Args:
@@ -45,7 +44,7 @@ class AmoLegacyClient(BaseClient):
         raise AmoException(auth_response)
 
     async def _init_async_session(
-        self, headers: Optional[dict] = None
+        self, headers: dict | None = None
     ) -> AsyncClient:
         """Init async session
 
@@ -70,7 +69,11 @@ class AmoLegacyClient(BaseClient):
         raise AmoException(data)
 
     def _send_api_request(
-        self, method: str, url: str, data: Optional[dict] = None
+        self,
+        method: str,
+        url: str,
+        data: dict | None = None,
+        _retry_counter: int = 0,
     ) -> dict:
         try:
             response = self._session.__getattribute__(method)(
@@ -86,7 +89,11 @@ class AmoLegacyClient(BaseClient):
             raise AmoException({'error': str(e)})
 
     async def _send_api_request_async(
-        self, method: str, url: str, data: Optional[dict] = None
+        self,
+        method: str,
+        url: str,
+        data: dict | None = None,
+        _retry_counter: int = 0,
     ) -> dict:
         if not hasattr(self, "_async_session"):
             self._async_session = await self._init_async_session()

@@ -1,8 +1,9 @@
 import asyncio
 import logging
+from collections.abc import AsyncIterator, Callable, Iterator
 from json import JSONDecodeError, loads
 from time import sleep
-from typing import Optional, Any
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
@@ -23,16 +24,16 @@ def mask_token(token: str) -> str:
 class Entity:
     crm_url: str = ""
     max_retries: int = 3
-    timeout: Optional[float] = 30.0
+    timeout: float | None = 30.0
     retry_sleep_base: float = 5.0
     retry_sleep_429: float = 20.0
     _session: Client
     _async_session: AsyncClient
 
-    def _init_session(self, headers: Optional[dict] = None) -> Client:
+    def _init_session(self, headers: dict | None = None) -> Client:
         raise NotImplementedError()
 
-    def _init_async_session(self, headers: Optional[dict] = None) -> AsyncClient:
+    async def _init_async_session(self, headers: dict | None = None) -> AsyncClient:
         raise NotImplementedError()
 
     def update_session_params(self, params: dict) -> None:
@@ -119,7 +120,7 @@ class Entity:
         url: str,
         data: Any,
         _retry_counter: int,
-        sleeper,
+        sleeper: Callable[[float], Any],
     ) -> dict:
         if response.status_code == 204:
             return {}
@@ -175,10 +176,10 @@ class Entity:
             raise AmoException(body, code=response.status_code)
         return body["response"] if isinstance(body, dict) and "response" in body else body
 
-    def _update_session(self):
+    def _update_session(self) -> None:
         self._session = self._init_session(dict(self._session.headers))
 
-    async def _update_session_async(self):
+    async def _update_session_async(self) -> None:
         self._async_session = await self._init_async_session(
             dict(self._async_session.headers)
         )
@@ -212,15 +213,15 @@ class Entity:
         entity: str,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        filter_ids: Optional[list] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}"
         params: dict = {"limit": limit, "page": page}
         if with_params:
-            params["with"] = ",".join(param for param in with_params)  # type: ignore
+            params["with"] = ",".join(param for param in with_params)
         if filters:
             filter_query = self._create_filter_query(filters)
             params.update(filter_query)
@@ -237,10 +238,10 @@ class Entity:
         entity: str,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        filter_ids: Optional[list] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
     ) -> dict:
         url = self._build_get_entities_url(
             entity, limit, page, with_params, filters, filter_ids, order
@@ -252,18 +253,74 @@ class Entity:
         entity: str,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        filter_ids: Optional[list] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
     ) -> dict:
         url = self._build_get_entities_url(
             entity, limit, page, with_params, filters, filter_ids, order
         )
         return await self._send_api_request_async("get", url)
 
+    def _extract_items(self, data: dict, embedded_key: str | None = None) -> list:
+        embedded = data.get("_embedded") or {}
+        if embedded_key:
+            return embedded.get(embedded_key, [])
+        for value in embedded.values():
+            if isinstance(value, list):
+                return value
+        return []
+
+    def _iter_entities(
+        self,
+        entity: str,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
+        embedded_key: str | None = None,
+    ) -> Iterator[dict]:
+        page = 1
+        while True:
+            data = self._get_entities(
+                entity, limit, page, with_params, filters, filter_ids, order
+            )
+            items = self._extract_items(data, embedded_key)
+            if not items:
+                break
+            yield from items
+            if len(items) < limit:
+                break
+            page += 1
+
+    async def _iter_entities_async(
+        self,
+        entity: str,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
+        embedded_key: str | None = None,
+    ) -> AsyncIterator[dict]:
+        page = 1
+        while True:
+            data = await self._get_entities_async(
+                entity, limit, page, with_params, filters, filter_ids, order
+            )
+            items = self._extract_items(data, embedded_key)
+            if not items:
+                break
+            for item in items:
+                yield item
+            if len(items) < limit:
+                break
+            page += 1
+
     def _get_entity_links(
-        self, entity: str, entity_id: int, filters: Optional[dict] = None
+        self, entity: str, entity_id: int, filters: dict | None = None
     ) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
         if filters:
@@ -272,7 +329,7 @@ class Entity:
         return self._send_api_request("get", url)
 
     async def _get_entity_links_async(
-        self, entity: str, entity_id: int, filters: Optional[dict] = None
+        self, entity: str, entity_id: int, filters: dict | None = None
     ) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
         if filters:

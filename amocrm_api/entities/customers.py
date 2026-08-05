@@ -1,6 +1,6 @@
+
 from .base import Entity
 
-from typing import Optional
 
 class Customers(Entity):
     def unlink_customers_entity(self, entity_id: int, objects: list) -> dict:
@@ -10,7 +10,7 @@ class Customers(Entity):
         return self._link_entities("customers", entity_id, objects)
 
     def get_customers_links(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         return self._get_entity_links("customers", entity_id, filters)
 
@@ -27,7 +27,7 @@ class Customers(Entity):
         return await self._link_entities_async("customers", entity_id, objects)
 
     async def get_customers_links_async(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         """Async version of get_customers_links."""
         return await self._get_entity_links_async("customers", entity_id, filters)

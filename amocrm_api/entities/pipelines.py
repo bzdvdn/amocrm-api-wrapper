@@ -1,6 +1,6 @@
+
 from .base import Entity
 
-from typing import Optional
 
 class Pipelines(Entity):
     def _build_create_pipeline_params(
@@ -10,7 +10,7 @@ class Pipelines(Entity):
         is_main: bool,
         statuses: list,
         is_unsorted_on: bool,
-        request_id: Optional[str],
+        request_id: str | None,
     ) -> dict:
         params = {
             "name": name,
@@ -266,7 +266,7 @@ class Pipelines(Entity):
         is_main: bool,
         statuses: list,
         is_unsorted_on: bool = False,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> dict:
         """craete pipeline
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines#pipelines-add
@@ -588,7 +588,7 @@ class Pipelines(Entity):
         is_main: bool,
         statuses: list,
         is_unsorted_on: bool = False,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> dict:
         """Async version of create_pipeline."""
         url = f"{self.crm_url}/api/v4/leads/pipelines"

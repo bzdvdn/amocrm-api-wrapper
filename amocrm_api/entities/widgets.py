@@ -1,6 +1,8 @@
+from typing import Any
+from urllib.parse import urlencode
+
 from .base import Entity
 
-from urllib.parse import urlencode
 
 class Widgets(Entity):
     def _build_get_widgets_url(self, page: int, limit: int) -> str:
@@ -121,7 +123,7 @@ class Widgets(Entity):
         url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
         return self._send_api_request("get", url)
 
-    def install_widget(self, widget_code: str, **kwargs) -> dict:
+    def install_widget(self, widget_code: str, **kwargs: Any) -> dict:
         """Install widget
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widget-install
         Args:
@@ -206,7 +208,7 @@ class Widgets(Entity):
         url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
         return await self._send_api_request_async("get", url)
 
-    async def install_widget_async(self, widget_code: str, **kwargs) -> dict:
+    async def install_widget_async(self, widget_code: str, **kwargs: Any) -> dict:
         """Async version of install_widget."""
         url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
         return await self._send_api_request_async("post", url, kwargs)

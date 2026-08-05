@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Leads(Entity):
     def link_leads_entity(self, entity_id: int, objects: list) -> dict:
@@ -9,7 +11,7 @@ class Leads(Entity):
     def unlink_leads_entity(self, entity_id: int, objects: list) -> dict:
         return self._unlink_entities("leads", entity_id, objects)
 
-    def get_leads_links(self, entity_id: int, filters: Optional[dict] = None) -> dict:
+    def get_leads_links(self, entity_id: int, filters: dict | None = None) -> dict:
         return self._get_entity_links("leads", entity_id, filters)
 
     def create_leads(self, objects: list) -> dict:
@@ -185,10 +187,10 @@ class Leads(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        filter_ids: Optional[list] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Get leads
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-list
@@ -299,7 +301,7 @@ class Leads(Entity):
         return await self._unlink_entities_async("leads", entity_id, objects)
 
     async def get_leads_links_async(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         """Async version of get_leads_links."""
         return await self._get_entity_links_async("leads", entity_id, filters)
@@ -321,11 +323,38 @@ class Leads(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        filter_ids: Optional[list] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Async version of get_leads."""
         params: dict = {k: v for k, v in locals().items() if k != "self"}
         return await self._get_entities_async("leads", **params)
+
+    def iter_leads(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all leads across pages."""
+        return self._iter_entities(
+            "leads", limit, with_params, filters, filter_ids, order, "leads"
+        )
+
+    async def iter_leads_async(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        filter_ids: list | None = None,
+        order: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_leads."""
+        async for lead in self._iter_entities_async(
+            "leads", limit, with_params, filters, filter_ids, order, "leads"
+        ):
+            yield lead

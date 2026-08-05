@@ -1,35 +1,35 @@
+
 from .base import Entity
 
-from typing import Optional
 
 class CustomFields(Entity):
     def _build_get_custom_fields_url(
         self,
         entity: str,
-        page: Optional[int],
+        page: int | None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}/custom_fields"
         if page:
             url = f"{url}?page={page}"
         return url
 
-    def _get_custom_fields(self, entity: str, page: Optional[int] = None) -> dict:
+    def _get_custom_fields(self, entity: str, page: int | None = None) -> dict:
         url = self._build_get_custom_fields_url(entity, page)
         return self._send_api_request("get", url)
 
-    def get_contacts_custom_fields(self, page: Optional[int] = None) -> dict:
+    def get_contacts_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("contacts", page=page)
 
-    def get_leads_custom_fields(self, page: Optional[int] = None) -> dict:
+    def get_leads_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("leads", page=page)
 
-    def get_companies_custom_fields(self, page: Optional[int] = None) -> dict:
+    def get_companies_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("companies", page=page)
 
-    def get_customers_custom_fields(self, page: Optional[int] = None) -> dict:
+    def get_customers_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("customers", page=page)
 
-    def get_customer_segments_custom_fields(self, page: Optional[int] = None) -> dict:
+    def get_customer_segments_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("customers/segments", page=page)
 
     def get_catalog_custom_fields(self, catalog_id: str) -> dict:
@@ -250,34 +250,34 @@ class CustomFields(Entity):
         return self._send_api_request("patch", url, custom_fields)
 
     async def _get_custom_fields_async(
-        self, entity: str, page: Optional[int] = None
+        self, entity: str, page: int | None = None
     ) -> dict:
         """Async version of _get_custom_fields."""
         url = self._build_get_custom_fields_url(entity, page)
         return await self._send_api_request_async("get", url)
 
     async def get_contacts_custom_fields_async(
-        self, page: Optional[int] = None
+        self, page: int | None = None
     ) -> dict:
         return await self._get_custom_fields_async("contacts", page=page)
 
     async def get_leads_custom_fields_async(
-        self, page: Optional[int] = None
+        self, page: int | None = None
     ) -> dict:
         return await self._get_custom_fields_async("leads", page=page)
 
     async def get_companies_custom_fields_async(
-        self, page: Optional[int] = None
+        self, page: int | None = None
     ) -> dict:
         return await self._get_custom_fields_async("companies", page=page)
 
     async def get_customers_custom_fields_async(
-        self, page: Optional[int] = None
+        self, page: int | None = None
     ) -> dict:
         return await self._get_custom_fields_async("customers", page=page)
 
     async def get_customer_segments_custom_fields_async(
-        self, page: Optional[int] = None
+        self, page: int | None = None
     ) -> dict:
         return await self._get_custom_fields_async("customers/segments", page=page)
 

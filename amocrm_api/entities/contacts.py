@@ -1,6 +1,8 @@
+
+from collections.abc import AsyncIterator, Iterator
+
 from .base import Entity
 
-from typing import Optional
 
 class Contacts(Entity):
     def unlink_contacts_entity(self, entity_id: int, objects: list) -> dict:
@@ -10,7 +12,7 @@ class Contacts(Entity):
         return self._link_entities("contacts", entity_id, objects)
 
     def get_contacts_links(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         return self._get_entity_links("contacts", entity_id, filters)
 
@@ -18,9 +20,9 @@ class Contacts(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Get contacts
         Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-list
@@ -267,7 +269,7 @@ class Contacts(Entity):
         return await self._link_entities_async("contacts", entity_id, objects)
 
     async def get_contacts_links_async(
-        self, entity_id: int, filters: Optional[dict] = None
+        self, entity_id: int, filters: dict | None = None
     ) -> dict:
         """Async version of get_contacts_links."""
         return await self._get_entity_links_async("contacts", entity_id, filters)
@@ -276,13 +278,38 @@ class Contacts(Entity):
         self,
         limit: int = 250,
         page: int = 1,
-        with_params: Optional[list] = None,
-        filters: Optional[dict] = None,
-        order: Optional[dict] = None,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
     ) -> dict:
         """Async version of get_contacts."""
         params = {k: v for k, v in locals().items() if k != "self"}
         return await self._get_entities_async("contacts", **params)
+
+    def iter_contacts(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> Iterator[dict]:
+        """Iterate over all contacts across pages."""
+        return self._iter_entities(
+            "contacts", limit, with_params, filters, None, order, "contacts"
+        )
+
+    async def iter_contacts_async(
+        self,
+        limit: int = 250,
+        with_params: list | None = None,
+        filters: dict | None = None,
+        order: dict | None = None,
+    ) -> AsyncIterator[dict]:
+        """Async version of iter_contacts."""
+        async for contact in self._iter_entities_async(
+            "contacts", limit, with_params, filters, None, order, "contacts"
+        ):
+            yield contact
 
     async def get_contact_async(self, contact_id: int) -> dict:
         """Async version of get_contact."""
