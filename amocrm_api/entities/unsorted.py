@@ -17,14 +17,14 @@ class Unsorted(Entity):
         params: dict = {"limit": limit, "page": page}
         orders = {}
         if filter_by_uids:
-            params["filter[uid]"] = filter_by_uids
+            params["filter[uid][]" if isinstance(filter_by_uids, list) else "filter[uid]"] = filter_by_uids
         if filter_by_category:
-            params["filter[category]"] = filter_by_category
+            params["filter[category][]" if isinstance(filter_by_category, list) else "filter[category]"] = filter_by_category
         if filter_by_pipeline_id:
-            params["filter[pipeline_id]"] = filter_by_pipeline_id
+            params["filter[pipeline_id][]" if isinstance(filter_by_pipeline_id, list) else "filter[pipeline_id]"] = filter_by_pipeline_id
         if order_by:
             orders = {f"order[{key}]": value for key, value in order_by.items()}
-        url = f"{url}?{urlencode(params)}"
+        url = f"{url}?{urlencode(params, doseq=True)}"
         if orders:
             url = f"{url}&{urlencode(orders)}"
         return url
@@ -36,7 +36,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None,
         created_at: int | None,
         request_id: str | None,
@@ -47,7 +47,7 @@ class Unsorted(Entity):
             "metadata": metadata,
             "contact": contact,
         }
-        _embedded = {"contacts": [contact], "leads": [lead], "companies": [comapany]}
+        _embedded = {"contacts": [contact], "leads": [lead], "companies": [company]}
         params["_embedded"] = _embedded
         if request_id:
             params["request_id"] = request_id
@@ -73,14 +73,14 @@ class Unsorted(Entity):
     ) -> str:
         params: dict = {}
         if uid:
-            params["filter[uid]"] = uid
+            params["filter[uid][]" if isinstance(uid, list) else "filter[uid]"] = uid
         if created_at__from:
             params["filter[created_at][from]"] = created_at__from
         if created_at__to:
             params["filter[created_at][to]"] = created_at__to
         if pipeline_id:
-            params["filter[pipeline_id]"] = pipeline_id
-        return f"{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}"
+            params["filter[pipeline_id][]" if isinstance(pipeline_id, list) else "filter[pipeline_id]"] = pipeline_id
+        return f"{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params, doseq=True)}"
 
     def get_unsorted_leads(
         self,
@@ -230,13 +230,13 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,
     ) -> dict:
         """create unsorted
-    
+
         Args:
             entity (str): form or sip
             source_uid (str): unique uid
@@ -244,7 +244,7 @@ class Unsorted(Entity):
             metadata (dict): meta object
             contact (dict): contact object
             lead (dict): lead object
-            comapany (dict): company object
+            company (dict): company object
             pipeline_id (Optional[int], optional): id of pipeline. Defaults to None.
             created_at (Optional[int], optional): tamstamp of lead created. Defaults to None.
             request_id (Optional[str], optional): str. Defaults to None.
@@ -298,7 +298,7 @@ class Unsorted(Entity):
             metadata,
             contact,
             lead,
-            comapany,
+            company,
             pipeline_id,
             created_at,
             request_id,
@@ -312,7 +312,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,
@@ -330,7 +330,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,
@@ -524,7 +524,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,
@@ -537,7 +537,7 @@ class Unsorted(Entity):
             metadata,
             contact,
             lead,
-            comapany,
+            company,
             pipeline_id,
             created_at,
             request_id,
@@ -551,7 +551,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,
@@ -567,7 +567,7 @@ class Unsorted(Entity):
         metadata: dict,
         contact: dict,
         lead: dict,
-        comapany: dict,
+        company: dict,
         pipeline_id: int | None = None,
         created_at: int | None = None,
         request_id: str | None = None,

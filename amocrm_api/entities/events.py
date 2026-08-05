@@ -29,7 +29,7 @@ class Events(Entity):
         if with_params:
             params["with"] = ",".join(param for param in with_params)
         if filter_by_ids:
-            params["filter[id]"] = filter_by_ids
+            params["filter[id][]" if isinstance(filter_by_ids, list) else "filter[id]"] = filter_by_ids
         if filter_by_created_from:
             params["filter[created_at][from]"] = filter_by_created_from
         if filter_by_created_to:
@@ -43,11 +43,11 @@ class Events(Entity):
         if filter_by_type:
             params["filter[type]"] = filter_by_type
 
-        return f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _build_get_event_url(
         self,
-        id: int,
+        id: str,
         with_params: list | None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/events/{id}"
@@ -97,7 +97,7 @@ class Events(Entity):
     def get_events(
         self,
         page: int = 1,
-        limit: int = 250,
+        limit: int = 100,
         with_params: list | None = None,
         filter_by_ids: str | list | None = None,
         filter_by_created_from: str | list | None = None,
@@ -195,7 +195,7 @@ class Events(Entity):
     async def get_events_async(
         self,
         page: int = 1,
-        limit: int = 250,
+        limit: int = 100,
         with_params: list | None = None,
         filter_by_ids: str | list | None = None,
         filter_by_created_from: str | list | None = None,
@@ -222,7 +222,7 @@ class Events(Entity):
 
     async def get_event_async(
         self,
-        id: int,
+        id: str,
         with_params: list | None = None,
     ) -> dict:
         """Async version of get_event."""
@@ -231,7 +231,7 @@ class Events(Entity):
 
     def get_event(
         self,
-        id: int,
+        id: str,
         with_params: list | None = None,
     ) -> dict:
         """Get event

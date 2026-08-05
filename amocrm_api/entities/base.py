@@ -215,26 +215,17 @@ class Entity:
 
     def _create_filter_query(self, filters: dict) -> dict:
         filter_query = {}
-        filters = filters.copy()
-        update_from = filters.pop("updated_at__from", None)
-        update_to = filters.pop("updated_at__to", None)
-        created_from = filters.pop("created_at__from", None)
-        created_to = filters.pop("created_at__to", None)
-        closed_from = filters.pop("closed_at__from", None)
-        closed_to = filters.pop("closed_at__to", None)
-        if update_from is not None:
-            filter_query["filter[updated_at][from]"] = update_from
-        if update_to is not None:
-            filter_query["filter[updated_at][to]"] = update_to
-        if created_from is not None:
-            filter_query["filter[created_at][from]"] = created_from
-        if created_to is not None:
-            filter_query["filter[created_at][to]"] = created_to
-        if closed_from is not None:
-            filter_query["filter[closed_at][from]"] = closed_from
-        if closed_to is not None:
-            filter_query["filter[closed_at][to]"] = closed_to
-        filter_query.update({f"filter[{k}]": v for k, v in filters.items()})
+        for key, value in filters.items():
+            if value is None:
+                continue
+            if key.endswith("__from"):
+                filter_query[f"filter[{key[:-6]}][from]"] = value
+            elif key.endswith("__to"):
+                filter_query[f"filter[{key[:-4]}][to]"] = value
+            elif isinstance(value, list):
+                filter_query[f"filter[{key}][]"] = value
+            else:
+                filter_query[f"filter[{key}]"] = value
         return filter_query
 
     def _build_get_entities_url(
@@ -246,21 +237,23 @@ class Entity:
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}"
         params: dict = {"limit": limit, "page": page}
         if with_params:
             params["with"] = ",".join(param for param in with_params)
+        if query:
+            params["query"] = query
         if filters:
             filter_query = self._create_filter_query(filters)
             params.update(filter_query)
         if filter_ids:
-            query = {f'filter[id][{index}]': id_ for index, id_ in enumerate(filter_ids)}
-            params.update(query)
+            params["filter[id][]"] = filter_ids
         if order:
             order_query = {f"order[{k}]": v for k, v in order.items()}
             params.update(order_query)
-        return f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _get_entities(
         self,
@@ -271,9 +264,10 @@ class Entity:
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         url = self._build_get_entities_url(
-            entity, limit, page, with_params, filters, filter_ids, order
+            entity, limit, page, with_params, filters, filter_ids, order, query
         )
         return self._send_api_request("get", url)
 
@@ -286,9 +280,10 @@ class Entity:
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         url = self._build_get_entities_url(
-            entity, limit, page, with_params, filters, filter_ids, order
+            entity, limit, page, with_params, filters, filter_ids, order, query
         )
         return await self._send_api_request_async("get", url)
 
@@ -310,11 +305,12 @@ class Entity:
         filter_ids: list | None = None,
         order: dict | None = None,
         embedded_key: str | None = None,
+        query: str | None = None,
     ) -> Iterator[dict]:
         page = 1
         while True:
             data = self._get_entities(
-                entity, limit, page, with_params, filters, filter_ids, order
+                entity, limit, page, with_params, filters, filter_ids, order, query
             )
             items = self._extract_items(data, embedded_key)
             if not items:
@@ -333,11 +329,12 @@ class Entity:
         filter_ids: list | None = None,
         order: dict | None = None,
         embedded_key: str | None = None,
+        query: str | None = None,
     ) -> AsyncIterator[dict]:
         page = 1
         while True:
             data = await self._get_entities_async(
-                entity, limit, page, with_params, filters, filter_ids, order
+                entity, limit, page, with_params, filters, filter_ids, order, query
             )
             items = self._extract_items(data, embedded_key)
             if not items:
@@ -353,8 +350,11 @@ class Entity:
     ) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
         if filters:
-            filter_query = {f"filter[{k}]": v for k, v in filters.items()}
-            url = f"{url}?{urlencode(filter_query)}"
+            filter_query = {
+                f"filter[{k}][]" if isinstance(v, list) else f"filter[{k}]": v
+                for k, v in filters.items()
+            }
+            url = f"{url}?{urlencode(filter_query, doseq=True)}"
         return self._send_api_request("get", url)
 
     async def _get_entity_links_async(
@@ -362,8 +362,11 @@ class Entity:
     ) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
         if filters:
-            filter_query = {f"filter[{k}]": v for k, v in filters.items()}
-            url = f"{url}?{urlencode(filter_query)}"
+            filter_query = {
+                f"filter[{k}][]" if isinstance(v, list) else f"filter[{k}]": v
+                for k, v in filters.items()
+            }
+            url = f"{url}?{urlencode(filter_query, doseq=True)}"
         return await self._send_api_request_async("get", url)
 
     def _link_entities(self, entity: str, entity_id: int, objects: list) -> dict:
@@ -393,8 +396,11 @@ class Entity:
         with_users_groups: bool = False,
         with_task_types: bool = False,
         with_version: bool = False,
-        with_ventity_names: bool = False,
+        with_entity_names: bool = False,
         with_datetime_settings: bool = False,
+        with_drive_url: bool = False,
+        with_is_api_filter_enabled: bool = False,
+        with_invoices_settings: bool = False,
     ) -> dict:
         """
         Doc: https://www.amocrm.ru/developers/content/crm_platform/account-info
@@ -404,8 +410,11 @@ class Entity:
             with_users_groups (bool, optional): . Defaults to False.
             with_task_types (bool, optional):. Defaults to False.
             with_version (bool, optional): . Defaults to False.
-            with_ventity_names (bool, optional):. Defaults to False.
+            with_entity_names (bool, optional):. Defaults to False.
             with_datetime_settings (bool, optional):. Defaults to False.
+            with_drive_url (bool, optional):. Defaults to False.
+            with_is_api_filter_enabled (bool, optional):. Defaults to False.
+            with_invoices_settings (bool, optional):. Defaults to False.
     
         Returns:
             dict: {
@@ -527,8 +536,11 @@ class Entity:
         with_users_groups: bool = False,
         with_task_types: bool = False,
         with_version: bool = False,
-        with_ventity_names: bool = False,
+        with_entity_names: bool = False,
         with_datetime_settings: bool = False,
+        with_drive_url: bool = False,
+        with_is_api_filter_enabled: bool = False,
+        with_invoices_settings: bool = False,
     ) -> dict:
         params = {k.replace("with_", ""): v for k, v in locals().items() if k != "self"}
         with_params = [param for param, value in params.items() if value]

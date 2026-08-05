@@ -23,6 +23,7 @@ class Contacts(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Get contacts
         Doc: https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-list
@@ -281,6 +282,7 @@ class Contacts(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Async version of get_contacts."""
         params = {k: v for k, v in locals().items() if k != "self"}
@@ -292,10 +294,11 @@ class Contacts(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> Iterator[dict]:
         """Iterate over all contacts across pages."""
         return self._iter_entities(
-            "contacts", limit, with_params, filters, None, order, "contacts"
+            "contacts", limit, with_params, filters, None, order, "contacts", query
         )
 
     async def iter_contacts_async(
@@ -304,10 +307,11 @@ class Contacts(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> AsyncIterator[dict]:
         """Async version of iter_contacts."""
         async for contact in self._iter_entities_async(
-            "contacts", limit, with_params, filters, None, order, "contacts"
+            "contacts", limit, with_params, filters, None, order, "contacts", query
         ):
             yield contact
 

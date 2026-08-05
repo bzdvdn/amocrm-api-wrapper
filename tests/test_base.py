@@ -283,6 +283,23 @@ class TestCreateFilterQuery(unittest.TestCase):
         client = make_client()
         self.assertEqual(client._create_filter_query({}), {})
 
+    def test_list_values_become_array_filters(self):
+        client = make_client()
+        result = client._create_filter_query({"responsible_user_id": [1, 2]})
+        self.assertEqual(result, {"filter[responsible_user_id][]": [1, 2]})
+
+    def test_list_filter_renders_repeated_param_in_url(self):
+        client = make_client()
+        with mock.patch.object(client, "_send_api_request") as mock_send:
+            mock_send.return_value = {}
+            client._get_entities(
+                "leads",
+                filters={"responsible_user_id": [1, 2]},
+            )
+            url = mock_send.call_args[0][1]
+        self.assertIn("filter%5Bresponsible_user_id%5D%5B%5D=1", url)
+        self.assertIn("filter%5Bresponsible_user_id%5D%5B%5D=2", url)
+
 
 class TestGetEntities(unittest.TestCase):
     def test_builds_url_with_filters_ids_order_with(self):
@@ -305,8 +322,8 @@ class TestGetEntities(unittest.TestCase):
         self.assertIn("with=contacts%2Ccompanies", url)
         self.assertIn("filter%5Bname%5D=test", url)
         self.assertIn("filter%5Bupdated_at%5D%5Bfrom%5D=100", url)
-        self.assertIn("filter%5Bid%5D%5B0%5D=1", url)
-        self.assertIn("filter%5Bid%5D%5B1%5D=2", url)
+        self.assertIn("filter%5Bid%5D%5B%5D=1", url)
+        self.assertIn("filter%5Bid%5D%5B%5D=2", url)
         self.assertIn("order%5Bcreated_at%5D=asc", url)
 
     def test_account_info_requires_no_extra_params(self):

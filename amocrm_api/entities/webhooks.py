@@ -4,10 +4,10 @@ from .base import Entity
 
 
 class Webhooks(Entity):
-    def _build_get_webhooks_url(self, distansion: str | None) -> str:
+    def _build_get_webhooks_url(self, destination: str | None) -> str:
         url = f"{self.crm_url}/api/v4/webhooks"
-        if distansion:
-            params = {"filter[distansion]": distansion}
+        if destination:
+            params = {"filter[destination]": destination}
             url = f"{url}?{urlencode(params)}"
         return url
 
@@ -18,11 +18,11 @@ class Webhooks(Entity):
     ) -> dict:
         return {"destination": destination, "settings": settings}
 
-    def get_webhooks(self, distansion: str | None = None) -> dict:
+    def get_webhooks(self, destination: str | None = None) -> dict:
         """Get webwooks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
         Args:
-            distansion (Optional[str], optional): filter by webhook url. Defaults to None.
+            destination (Optional[str], optional): filter by webhook url. Defaults to None.
     
         Returns:
             dict: {
@@ -59,7 +59,7 @@ class Webhooks(Entity):
                 }
             }
         """
-        url = self._build_get_webhooks_url(distansion)
+        url = self._build_get_webhooks_url(destination)
         return self._send_api_request("get", url)
 
     def subscribe_webhook(self, destination: str, settings: list) -> dict:
@@ -95,9 +95,9 @@ class Webhooks(Entity):
         url = f"{self.crm_url}/api/v4/webhooks"
         return self._send_api_request("delete", url)
 
-    async def get_webhooks_async(self, distansion: str | None = None) -> dict:
+    async def get_webhooks_async(self, destination: str | None = None) -> dict:
         """Async version of get_webhooks."""
-        url = self._build_get_webhooks_url(distansion)
+        url = self._build_get_webhooks_url(destination)
         return await self._send_api_request_async("get", url)
 
     async def subscribe_webhook_async(

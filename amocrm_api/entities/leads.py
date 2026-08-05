@@ -93,7 +93,7 @@ class Leads(Entity):
         """
         return self._create_or_update_entities("leads", objects, True)
 
-    def get_lead(self, lead_id: int) -> dict:
+    def get_lead(self, lead_id: int, with_params: list | None = None) -> dict:
         """return lead
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#lead-detail
         Args:
@@ -181,6 +181,8 @@ class Leads(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/leads/{lead_id}"
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return self._send_api_request("get", url)
 
     def get_leads(
@@ -191,6 +193,7 @@ class Leads(Entity):
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Get leads
         Doc: https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-list
@@ -314,9 +317,13 @@ class Leads(Entity):
         """Async version of update_leads."""
         return await self._create_or_update_entities_async("leads", objects, True)
 
-    async def get_lead_async(self, lead_id: int) -> dict:
+    async def get_lead_async(
+        self, lead_id: int, with_params: list | None = None
+    ) -> dict:
         """Async version of get_lead."""
         url = f"{self.crm_url}/api/v4/leads/{lead_id}"
+        if with_params:
+            url += "?with=" + ",".join(param for param in with_params)
         return await self._send_api_request_async("get", url)
 
     async def get_leads_async(
@@ -327,6 +334,7 @@ class Leads(Entity):
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Async version of get_leads."""
         params: dict = {k: v for k, v in locals().items() if k != "self"}
@@ -339,10 +347,11 @@ class Leads(Entity):
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> Iterator[dict]:
         """Iterate over all leads across pages."""
         return self._iter_entities(
-            "leads", limit, with_params, filters, filter_ids, order, "leads"
+            "leads", limit, with_params, filters, filter_ids, order, "leads", query
         )
 
     async def iter_leads_async(
@@ -352,9 +361,10 @@ class Leads(Entity):
         filters: dict | None = None,
         filter_ids: list | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> AsyncIterator[dict]:
         """Async version of iter_leads."""
         async for lead in self._iter_entities_async(
-            "leads", limit, with_params, filters, filter_ids, order, "leads"
+            "leads", limit, with_params, filters, filter_ids, order, "leads", query
         ):
             yield lead

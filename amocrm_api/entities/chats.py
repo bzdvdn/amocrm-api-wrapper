@@ -17,8 +17,7 @@ class Chats(Entity):
         params: dict = {"page": page, "limit": limit}
         if filter_by_ids:
             if isinstance(filter_by_ids, list):
-                for index, id_ in enumerate(filter_by_ids):
-                    params[f"filter[id][{index}]"] = id_
+                params["filter[id][]"] = filter_by_ids
             else:
                 params["filter[id]"] = filter_by_ids
         if filter_by_created_at_from:
@@ -27,7 +26,7 @@ class Chats(Entity):
             params["filter[created_at][to]"] = filter_by_created_at_to
         if with_params:
             params["with"] = ",".join(param for param in with_params)
-        return f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _build_get_chat_url(self, chat_id: int) -> str:
         return f"{self.crm_url}/api/v4/chats/{chat_id}"

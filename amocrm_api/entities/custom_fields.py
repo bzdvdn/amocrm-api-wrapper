@@ -32,7 +32,7 @@ class CustomFields(Entity):
     def get_customer_segments_custom_fields(self, page: int | None = None) -> dict:
         return self._get_custom_fields("customers/segments", page=page)
 
-    def get_catalog_custom_fields(self, catalog_id: str) -> dict:
+    def get_catalog_custom_fields(self, catalog_id: int) -> dict:
         return self._get_custom_fields(f"catalogs/{catalog_id}")
 
     def _get_custom_field_by_entity_type(
@@ -281,7 +281,7 @@ class CustomFields(Entity):
     ) -> dict:
         return await self._get_custom_fields_async("customers/segments", page=page)
 
-    async def get_catalog_custom_fields_async(self, catalog_id: str) -> dict:
+    async def get_catalog_custom_fields_async(self, catalog_id: int) -> dict:
         return await self._get_custom_fields_async(f"catalogs/{catalog_id}")
 
     async def _get_custom_field_by_entity_type_async(

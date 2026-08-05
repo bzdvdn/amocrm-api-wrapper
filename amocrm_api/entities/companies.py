@@ -23,6 +23,7 @@ class Companies(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Get companies
         Doc: https://www.amocrm.ru/developers/content/crm_platform/companies-api#companies-list
@@ -197,6 +198,7 @@ class Companies(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> dict:
         """Async version of get_companies."""
         params = {k: v for k, v in locals().items() if k != "self"}
@@ -208,10 +210,11 @@ class Companies(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> Iterator[dict]:
         """Iterate over all companies across pages."""
         return self._iter_entities(
-            "companies", limit, with_params, filters, None, order, "companies"
+            "companies", limit, with_params, filters, None, order, "companies", query
         )
 
     async def iter_companies_async(
@@ -220,10 +223,11 @@ class Companies(Entity):
         with_params: list | None = None,
         filters: dict | None = None,
         order: dict | None = None,
+        query: str | None = None,
     ) -> AsyncIterator[dict]:
         """Async version of iter_companies."""
         async for company in self._iter_entities_async(
-            "companies", limit, with_params, filters, None, order, "companies"
+            "companies", limit, with_params, filters, None, order, "companies", query
         ):
             yield company
 

@@ -21,11 +21,11 @@ class Notes(Entity):
         url = f"{self.crm_url}/api/v4/{entity_type}/notes"
         params: dict = {"page": page, "limit": limit}
         if filter_by_id:
-            params["filter[id]"] = filter_by_id
+            params["filter[id][]" if isinstance(filter_by_id, list) else "filter[id]"] = filter_by_id
         if filter_by_note_type:
-            params["filter[note_type]"] = filter_by_note_type
+            params["filter[note_type][]" if isinstance(filter_by_note_type, list) else "filter[note_type]"] = filter_by_note_type
         if filter_by_entity_id:
-            params["filter[entity_id]"] = filter_by_entity_id
+            params["filter[entity_id][]"] = filter_by_entity_id
         if filter_by_updated_at:
             params["filter[updated_at]"] = filter_by_updated_at
         if filter_by_updated_at_from:
@@ -37,7 +37,7 @@ class Notes(Entity):
         if order_by_id:
             params["order[id]"] = order_by_id
 
-        return f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _build_get_notes_by_entity_type_and_entity_id_url(
         self,
@@ -56,9 +56,9 @@ class Notes(Entity):
         url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
         params: dict = {"page": page, "limit": limit}
         if filter_by_id:
-            params["filter[id]"] = filter_by_id
+            params["filter[id][]" if isinstance(filter_by_id, list) else "filter[id]"] = filter_by_id
         if filter_by_note_type:
-            params["filter[note_type]"] = filter_by_note_type
+            params["filter[note_type][]" if isinstance(filter_by_note_type, list) else "filter[note_type]"] = filter_by_note_type
         if filter_by_updated_at:
             params["filter[updated_at]"] = filter_by_updated_at
         if filter_by_updated_at_from:
@@ -70,7 +70,7 @@ class Notes(Entity):
         if order_by_id:
             params["order[id]"] = order_by_id
 
-        return f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params, doseq=True)}"
 
     def _build_get_entity_note_url(
         self,
@@ -405,7 +405,8 @@ class Notes(Entity):
             entity_type (str): entity type
             entity_id (int): entity_id
             id_ (int): note id
-    
+            params (dict): full note model like {'note_type': 'common', 'params': {'text': 'hi'}}
+
         Returns:
             dict: {
                 "_links": {
@@ -440,6 +441,8 @@ class Notes(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
+        params = dict(params)
+        params["id"] = id_
         return self._send_api_request("patch", url, params)
 
     def update_entity_many_notes(
@@ -570,6 +573,8 @@ class Notes(Entity):
     ) -> dict:
         """Async version of update_entity_note."""
         url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
+        params = dict(params)
+        params["id"] = id_
         return await self._send_api_request_async("patch", url, params)
 
     async def update_entity_many_notes_async(
