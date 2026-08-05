@@ -170,12 +170,57 @@ class Companies(Entity):
         url = f"{self.crm_url}/api/v4/companies"
         return self._send_api_request("post", url, companies)
 
+    async def unlink_companies_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of unlink_companies_entity."""
+        return await self._unlink_entities_async("companies", entity_id, objects)
+
+    async def link_companies_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of link_companies_entity."""
+        return await self._link_entities_async("companies", entity_id, objects)
+
+    async def get_companies_links_async(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        """Async version of get_companies_links."""
+        return await self._get_entity_links_async("companies", entity_id, filters)
+
+    async def get_companies_async(
+        self,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_companies."""
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return await self._get_entities_async("companies", **params)
+
+    async def get_company_async(self, company_id: int) -> dict:
+        """Async version of get_company."""
+        url = f"{self.crm_url}/api/v4/companies/{company_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def create_companies_async(self, companies: list) -> dict:
+        """Async version of create_companies."""
+        url = f"{self.crm_url}/api/v4/companies"
+        return await self._send_api_request_async("post", url, companies)
+
+    async def update_companies_async(self, companies: list) -> dict:
+        """Async version of update_companies."""
+        url = f"{self.crm_url}/api/v4/companies"
+        return await self._send_api_request_async("post", url, companies)
+
     def update_companies(self, companies: list) -> dict:
         """Update companies
-    
+
         Args:
             companies (list): list of companies
-    
+
         Returns:
             dict: {
                 "_links": {

@@ -485,3 +485,58 @@ class Catalogs(Entity):
         return self._create_or_update_entities(
             f"catalogs/{catalog_id}/elements", elements, True
         )
+
+    async def get_catalogs_async(self, page: int = 1, limit: int = 250) -> dict:
+        """Async version of get_catalogs."""
+        params: dict = {"page": page, "limit": limit}
+        return await self._get_entities_async("catalogs", **params)
+
+    async def get_catalog_async(self, catalog_id: int) -> dict:
+        """Async version of get_catalog."""
+        url = f"{self.crm_url}/api/v4/catalogs/{catalog_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def create_catalogs_async(self, catalogs: list) -> dict:
+        """Async version of create_catalogs."""
+        return await self._create_or_update_entities_async("catalogs", catalogs)
+
+    async def update_catalogs_async(self, catalogs: list) -> dict:
+        """Async version of update_catalogs."""
+        return await self._create_or_update_entities_async("catalogs", catalogs, True)
+
+    async def get_catalog_elements_async(
+        self,
+        catalog_id: int,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_catalog_elements."""
+        params: dict = {"page": page, "limit": limit, "filters": filters}
+        entity = f"catalogs/{catalog_id}/elements"
+        return await self._get_entities_async(entity, **params)
+
+    async def get_catalog_element_async(
+        self, catalog_id: int, element_id: int
+    ) -> dict:
+        """Async version of get_catalog_element."""
+        url = (
+            f"{self.crm_url}/api/v4/catalogs/{catalog_id}/elements/{element_id}"
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def add_elements_to_catalog_async(
+        self, catalog_id: int, elements: list
+    ) -> dict:
+        """Async version of add_elements_to_catalog."""
+        return await self._create_or_update_entities_async(
+            f"catalogs/{catalog_id}/elements", elements
+        )
+
+    async def update_elements_in_catalog_async(
+        self, catalog_id: int, elements: list
+    ) -> dict:
+        """Async version of update_elements_in_catalog."""
+        return await self._create_or_update_entities_async(
+            f"catalogs/{catalog_id}/elements", elements, True
+        )

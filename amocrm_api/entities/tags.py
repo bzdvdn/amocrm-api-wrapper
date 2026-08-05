@@ -78,3 +78,22 @@ class Tags(Entity):
             }
         """
         return self._create_or_update_entities(f"{entity_type}/tags", tags)
+
+    async def get_tags_by_entity_type_async(
+        self,
+        entity_type: str,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_tags_by_entity_type."""
+        params: dict = {"page": page, "limit": limit, "filters": filters}
+        return await self._get_entities_async(f"{entity_type}/tags", **params)
+
+    async def add_tags_for_entity_type_async(
+        self, entity_type: str, tags: list
+    ) -> dict:
+        """Async version of add_tags_for_entity_type."""
+        return await self._create_or_update_entities_async(
+            f"{entity_type}/tags", tags
+        )

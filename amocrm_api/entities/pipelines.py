@@ -3,6 +3,48 @@ from .base import Entity
 from typing import Optional
 
 class Pipelines(Entity):
+    def _build_create_pipeline_params(
+        self,
+        name: str,
+        sort: int,
+        is_main: bool,
+        statuses: list,
+        is_unsorted_on: bool,
+        request_id: Optional[str],
+    ) -> dict:
+        params = {
+            "name": name,
+            "sort": sort,
+            "is_main": is_main,
+            "_embedded": {"statuses": statuses},
+            "is_unsorted_on": is_unsorted_on,
+        }
+        if request_id:
+            params["request_id"] = request_id
+        return params
+
+    def _build_edit_pipeline_params(
+        self,
+        name: str,
+        sort: int,
+        is_main: bool,
+        is_unsorted_on: bool,
+    ) -> dict:
+        return {
+            "name": name,
+            "sort": sort,
+            "is_main": is_main,
+            "is_unsorted_on": is_unsorted_on,
+        }
+
+    def _build_edit_pipeline_status_params(
+        self,
+        name: str,
+        sort: int,
+        color: str,
+    ) -> dict:
+        return {"name": name, "sort": sort, "color": color}
+
     def get_pipelines(self) -> dict:
         """get leads pipelines
     
@@ -240,15 +282,9 @@ class Pipelines(Entity):
             dict: query result
         """
         url = f"{self.crm_url}/api/v4/leads/pipelines"
-        params = {
-            "name": name,
-            "sort": sort,
-            "is_main": is_main,
-            "_embedded": {"statuses": statuses},
-            "is_unsorted_on": is_unsorted_on,
-        }
-        if request_id:
-            params["request_id"] = request_id
+        params = self._build_create_pipeline_params(
+            name, sort, is_main, statuses, is_unsorted_on, request_id
+        )
         return self._send_api_request("post", url, [params])
 
     def edit_pipeline(
@@ -272,12 +308,9 @@ class Pipelines(Entity):
             dict: query result
         """
         url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
-        params = {
-            "name": name,
-            "sort": sort,
-            "is_main": is_main,
-            "is_unsorted_on": is_unsorted_on,
-        }
+        params = self._build_edit_pipeline_params(
+            name, sort, is_main, is_unsorted_on
+        )
         return self._send_api_request("patch", url, params)
 
     def delete_pipeline(self, pipeline_id: int) -> dict:
@@ -520,7 +553,7 @@ class Pipelines(Entity):
         url = (
             f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
-        params = {"name": name, "sort": sort, "color": color}
+        params = self._build_edit_pipeline_status_params(name, sort, color)
         return self._send_api_request("patch", url, params)
 
     def delete_status_from_pipeline(self, pipeline_id: int, status_id: int) -> dict:
@@ -537,3 +570,89 @@ class Pipelines(Entity):
             f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
         )
         return self._send_api_request("delete", url)
+
+    async def get_pipelines_async(self) -> dict:
+        """Async version of get_pipelines."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines"
+        return await self._send_api_request_async("get", url)
+
+    async def get_pipeline_async(self, pipeline_id: int) -> dict:
+        """Async version of get_pipeline."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def create_pipeline_async(
+        self,
+        name: str,
+        sort: int,
+        is_main: bool,
+        statuses: list,
+        is_unsorted_on: bool = False,
+        request_id: Optional[str] = None,
+    ) -> dict:
+        """Async version of create_pipeline."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines"
+        params = self._build_create_pipeline_params(
+            name, sort, is_main, statuses, is_unsorted_on, request_id
+        )
+        return await self._send_api_request_async("post", url, [params])
+
+    async def edit_pipeline_async(
+        self,
+        pipeline_id: int,
+        name: str,
+        sort: int,
+        is_main: bool,
+        is_unsorted_on: bool,
+    ) -> dict:
+        """Async version of edit_pipeline."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
+        params = self._build_edit_pipeline_params(
+            name, sort, is_main, is_unsorted_on
+        )
+        return await self._send_api_request_async("patch", url, params)
+
+    async def delete_pipeline_async(self, pipeline_id: int) -> dict:
+        """Async version of delete_pipeline."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}"
+        return await self._send_api_request_async("delete", url)
+
+    async def get_pipeline_statuses_async(self, pipeline_id: int) -> dict:
+        """Async version of get_pipeline_statuses."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        return await self._send_api_request_async("get", url)
+
+    async def get_pipeline_status_async(
+        self, pipeline_id: int, status_id: int
+    ) -> dict:
+        """Async version of get_pipeline_status."""
+        url = (
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def add_statuses_to_pipeline_async(
+        self, pipeline_id: int, statuses: list
+    ) -> dict:
+        """Async version of add_statuses_to_pipeline."""
+        url = f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses"
+        return await self._send_api_request_async("post", url, statuses)
+
+    async def edit_pipeline_status_async(
+        self, pipeline_id: int, status_id: int, name: str, sort: int, color: str
+    ) -> dict:
+        """Async version of edit_pipeline_status."""
+        url = (
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
+        )
+        params = self._build_edit_pipeline_status_params(name, sort, color)
+        return await self._send_api_request_async("patch", url, params)
+
+    async def delete_status_from_pipeline_async(
+        self, pipeline_id: int, status_id: int
+    ) -> dict:
+        """Async version of delete_status_from_pipeline."""
+        url = (
+            f"{self.crm_url}/api/v4/leads/pipelines/{pipeline_id}/statuses/{status_id}"
+        )
+        return await self._send_api_request_async("delete", url)

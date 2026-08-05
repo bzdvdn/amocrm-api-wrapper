@@ -3,6 +3,11 @@ from .base import Entity
 from urllib.parse import urlencode
 
 class Widgets(Entity):
+    def _build_get_widgets_url(self, page: int, limit: int) -> str:
+        url = f"{self.crm_url}/api/v4/widgets"
+        params = {"page": page, "limit": limit}
+        return f"{url}?{urlencode(params)}"
+
     def get_widgets(self, page: int = 1, limit: int = 250) -> dict:
         """Get widgets
         Doc: https://www.amocrm.ru/developers/content/crm_platform/widgets-api#widgets-list
@@ -77,9 +82,7 @@ class Widgets(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/widgets"
-        params = {"page": page, "limit": limit}
-        url = f"{url}?{urlencode(params)}"
+        url = self._build_get_widgets_url(page, limit)
         return self._send_api_request("get", url)
 
     def get_widget(self, widget_code: str) -> dict:
@@ -192,3 +195,23 @@ class Widgets(Entity):
     
         url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
         return self._send_api_request("delete", url)
+
+    async def get_widgets_async(self, page: int = 1, limit: int = 250) -> dict:
+        """Async version of get_widgets."""
+        url = self._build_get_widgets_url(page, limit)
+        return await self._send_api_request_async("get", url)
+
+    async def get_widget_async(self, widget_code: str) -> dict:
+        """Async version of get_widget."""
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return await self._send_api_request_async("get", url)
+
+    async def install_widget_async(self, widget_code: str, **kwargs) -> dict:
+        """Async version of install_widget."""
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return await self._send_api_request_async("post", url, kwargs)
+
+    async def uninstall_widget_async(self, widget_code: str) -> dict:
+        """Async version of uninstall_widget."""
+        url = f"{self.crm_url}/api/v4/widgets/{widget_code}"
+        return await self._send_api_request_async("delete", url)

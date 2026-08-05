@@ -4,6 +4,58 @@ from typing import Optional, Union
 from urllib.parse import urlencode
 
 class Events(Entity):
+    def _build_get_events_type_url(
+        self,
+        language_code: Optional[str],
+    ) -> str:
+        params = {"language_code": language_code}
+        return f"{self.crm_url}/api/v4/events/types?{urlencode(params)}"
+
+    def _build_get_events_url(
+        self,
+        page: int,
+        limit: int,
+        with_params: Optional[list],
+        filter_by_ids: Union[str, list, None],
+        filter_by_created_from: Union[str, list, None],
+        filter_by_created_to: Union[str, list, None],
+        filter_by_created_by: Union[str, list, None],
+        filter_by_entity: Union[str, list, None],
+        filter_by_entity_id: Union[str, list, None],
+        filter_by_type: Union[str, list, None],
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/events"
+        params: dict = {"limit": limit, "page": page}
+        if with_params:
+            params["with"] = ",".join(param for param in with_params)  # type: ignore
+        if filter_by_ids:
+            params["filter[id]"] = filter_by_ids  # type: ignore
+        if filter_by_created_from:
+            params["filter[created_at][from]"] = filter_by_created_from  # type: ignore
+        if filter_by_created_to:
+            params["filter[created_at][to]"] = filter_by_created_to  # type: ignore
+        if filter_by_created_by:
+            params["filter[created_by][]"] = filter_by_created_by  # type: ignore
+        if filter_by_entity:
+            params["filter[entity][]"] = filter_by_entity  # type: ignore
+        if filter_by_entity_id:
+            params["filter[entity_id][]"] = filter_by_entity_id  # type: ignore
+        if filter_by_type:
+            params["filter[type]"] = filter_by_type  # type: ignore
+
+        return f"{url}?{urlencode(params)}"
+
+    def _build_get_event_url(
+        self,
+        id: int,
+        with_params: Optional[list],
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/events/{id}"
+        params: dict = {}
+        if with_params:
+            params["with"] = ",".join(param for param in with_params)
+        return f"{url}?{urlencode(params)}"
+
     def get_events_type(
         self,
         language_code: Optional[str] = None,
@@ -39,8 +91,7 @@ class Events(Entity):
                 }
             }
         """
-        params = {"language_code": language_code}
-        url = f"{self.crm_url}/api/v4/events/types?{urlencode(params)}"
+        url = self._build_get_events_type_url(language_code)
         return self._send_api_request("get", url)
 
     def get_events(
@@ -119,27 +170,64 @@ class Events(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/events"
-        params: dict = {"limit": limit, "page": page}
-        if with_params:
-            params["with"] = ",".join(param for param in with_params)  # type: ignore
-        if filter_by_ids:
-            params["filter[id]"] = filter_by_ids  # type: ignore
-        if filter_by_created_from:
-            params["filter[created_at][from]"] = filter_by_created_from  # type: ignore
-        if filter_by_created_to:
-            params["filter[created_at][to]"] = filter_by_created_to  # type: ignore
-        if filter_by_created_by:
-            params["filter[created_by][]"] = filter_by_created_by  # type: ignore
-        if filter_by_entity:
-            params["filter[entity][]"] = filter_by_entity  # type: ignore
-        if filter_by_entity_id:
-            params["filter[entity_id][]"] = filter_by_entity_id  # type: ignore
-        if filter_by_type:
-            params["filter[type]"] = filter_by_type  # type: ignore
-    
-        url = f"{url}?{urlencode(params)}"
+        url = self._build_get_events_url(
+            page,
+            limit,
+            with_params,
+            filter_by_ids,
+            filter_by_created_from,
+            filter_by_created_to,
+            filter_by_created_by,
+            filter_by_entity,
+            filter_by_entity_id,
+            filter_by_type,
+        )
         return self._send_api_request("get", url)
+
+    async def get_events_type_async(
+        self,
+        language_code: Optional[str] = None,
+    ) -> dict:
+        """Async version of get_events_type."""
+        url = self._build_get_events_type_url(language_code)
+        return await self._send_api_request_async("get", url)
+
+    async def get_events_async(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        with_params: Optional[list] = None,
+        filter_by_ids: Union[str, list, None] = None,
+        filter_by_created_from: Union[str, list, None] = None,
+        filter_by_created_to: Union[str, list, None] = None,
+        filter_by_created_by: Union[str, list, None] = None,
+        filter_by_entity: Union[str, list, None] = None,
+        filter_by_entity_id: Union[str, list, None] = None,
+        filter_by_type: Union[str, list, None] = None,
+    ) -> dict:
+        """Async version of get_events."""
+        url = self._build_get_events_url(
+            page,
+            limit,
+            with_params,
+            filter_by_ids,
+            filter_by_created_from,
+            filter_by_created_to,
+            filter_by_created_by,
+            filter_by_entity,
+            filter_by_entity_id,
+            filter_by_type,
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def get_event_async(
+        self,
+        id: int,
+        with_params: Optional[list] = None,
+    ) -> dict:
+        """Async version of get_event."""
+        url = self._build_get_event_url(id, with_params)
+        return await self._send_api_request_async("get", url)
 
     def get_event(
         self,
@@ -184,10 +272,5 @@ class Events(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/events/{id}"
-        params = {}
-        if with_params:
-            params["with"] = ",".join(param for param in with_params)
-    
-        url = f"{url}?{urlencode(params)}"
+        url = self._build_get_event_url(id, with_params)
         return self._send_api_request("get", url)

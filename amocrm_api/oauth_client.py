@@ -1,7 +1,9 @@
+import asyncio
 from threading import Lock
 from typing import Callable, Optional
 
-from requests import Session, post
+import httpx
+from httpx import AsyncClient, Client
 
 from .errors import AmoException
 from .base import BaseClient, mask_token
@@ -26,16 +28,30 @@ class AmoOAuthClient(BaseClient):
         self.redirect_uri = redirect_uri
         self.token_store = token_store
         self._token_lock = Lock()
+        self._async_token_lock = asyncio.Lock()
         self._session = self._init_session()
-
-    def _init_session(self, params: Optional[dict] = None) -> Session:
-        session = Session()
-        session.headers.update(
-            {
-                'Authorization': f'Bearer {self.access_token}',
-                'User-Agent': 'amocrm-api-client/1.0',
-            }
+        self._async_session = AsyncClient(
+            headers=self._auth_headers(), timeout=self.timeout
         )
+
+    def _auth_headers(self) -> dict:
+        return {
+            'Authorization': f'Bearer {self.access_token}',
+            'User-Agent': 'amocrm-api-client/1.0',
+        }
+
+    def _init_session(self, params: Optional[dict] = None) -> Client:
+        session = Client(timeout=self.timeout)
+        session.headers.update(self._auth_headers())
+        if params:
+            session.headers.update(params)
+        return session
+
+    async def _init_async_session(
+        self, params: Optional[dict] = None
+    ) -> AsyncClient:
+        session = AsyncClient(timeout=self.timeout)
+        session.headers.update(self._auth_headers())
         if params:
             session.headers.update(params)
         return session
@@ -56,25 +72,63 @@ class AmoOAuthClient(BaseClient):
                 return self._send_api_request(method, url, data, True)
             raise
 
+    async def _send_api_request_async(
+        self,
+        method: str,
+        url: str,
+        data: Optional[dict] = None,
+        update_tokens: bool = False,
+    ) -> dict:
+        try:
+            response = await super()._send_api_request_async(method, url, data)
+            return response
+        except AmoException as e:
+            if getattr(e, "code", None) == 401 and not update_tokens:
+                await self.update_tokens_async()
+                return await self._send_api_request_async(method, url, data, True)
+            raise
+
     def update_session_auth_headers(self):
         self.update_session_params({'Authorization': f'Bearer {self.access_token}'})
 
+    async def update_session_auth_headers_async(self):
+        await self.update_session_params_async(
+            {'Authorization': f'Bearer {self.access_token}'}
+        )
+
+    def _refresh_tokens(self):
+        url = f'{self.crm_url}/oauth2/access_token'
+        params = {
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'grant_type': 'refresh_token',
+            'refresh_token': self.refresh_token,
+            'redirect_uri': self.redirect_uri,
+        }
+        return url, params
+
     def update_tokens(self):
         with self._token_lock:
-            url = f'{self.crm_url}/oauth2/access_token'
-            params = {
-                'client_id': self.client_id,
-                'client_secret': self.client_secret,
-                'grant_type': 'refresh_token',
-                'refresh_token': self.refresh_token,
-                'redirect_uri': self.redirect_uri,
-            }
-            r = post(url, json=params, timeout=self.timeout)
+            url, params = self._refresh_tokens()
+            r = httpx.post(url, json=params, timeout=self.timeout)
             data = r.json()
             if r.status_code >= 400:
                 raise AmoException(data, code=r.status_code)
             self._update_token_params(data['access_token'], data['refresh_token'])
             self.update_session_auth_headers()
+            if self.token_store is not None:
+                self.token_store(self.access_token, self.refresh_token)
+
+    async def update_tokens_async(self):
+        async with self._async_token_lock:
+            url, params = self._refresh_tokens()
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                r = await client.post(url, json=params)
+            data = r.json()
+            if r.status_code >= 400:
+                raise AmoException(data, code=r.status_code)
+            self._update_token_params(data['access_token'], data['refresh_token'])
+            await self.update_session_auth_headers_async()
             if self.token_store is not None:
                 self.token_store(self.access_token, self.refresh_token)
 

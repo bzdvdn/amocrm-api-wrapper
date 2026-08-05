@@ -3,6 +3,13 @@ from .base import Entity
 from typing import Optional
 
 class Tasks(Entity):
+    def _build_execution_task_params(
+        self,
+        is_completed: bool,
+        result: str,
+    ) -> dict:
+        return {"is_completed": is_completed, "result": {"text": result}}
+
     def get_tasks(
         self,
         page: int = 1,
@@ -219,5 +226,37 @@ class Tasks(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/tasks/{task_id}"
-        params = {"is_completed": is_completed, "result": {"text": result}}
+        params = self._build_execution_task_params(is_completed, result)
         return self._send_api_request("patch", url, params)
+
+    async def get_tasks_async(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_tasks."""
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return await self._get_entities_async("tasks", **params)
+
+    async def get_task_async(self, task_id: int) -> dict:
+        """Async version of get_task."""
+        url = f"{self.crm_url}/api/v4/tasks/{task_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def add_tasks_async(self, tasks: list) -> dict:
+        """Async version of add_tasks."""
+        return await self._create_or_update_entities_async("tasks", tasks)
+
+    async def update_tasks_async(self, tasks: list) -> dict:
+        """Async version of update_tasks."""
+        return await self._create_or_update_entities_async("tasks", tasks, True)
+
+    async def execution_task_async(
+        self, task_id: int, is_completed: bool, result: str
+    ) -> dict:
+        """Async version of execution_task."""
+        url = f"{self.crm_url}/api/v4/tasks/{task_id}"
+        params = self._build_execution_task_params(is_completed, result)
+        return await self._send_api_request_async("patch", url, params)

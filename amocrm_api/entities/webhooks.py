@@ -4,6 +4,20 @@ from typing import Optional
 from urllib.parse import urlencode
 
 class Webhooks(Entity):
+    def _build_get_webhooks_url(self, distansion: Optional[str]) -> str:
+        url = f"{self.crm_url}/api/v4/webhooks"
+        if distansion:
+            params = {"filter[distansion]": distansion}
+            url = f"{url}?{urlencode(params)}"
+        return url
+
+    def _build_subscribe_webhook_params(
+        self,
+        destination: str,
+        settings: list,
+    ) -> dict:
+        return {"destination": destination, "settings": settings}
+
     def get_webhooks(self, distansion: Optional[str] = None) -> dict:
         """Get webwooks
         Doc: https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-list
@@ -45,10 +59,7 @@ class Webhooks(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/webhooks"
-        if distansion:
-            params = {"filter[distansion]": distansion}
-            url = f"{url}?{urlencode(params)}"
+        url = self._build_get_webhooks_url(distansion)
         return self._send_api_request("get", url)
 
     def subscribe_webhook(self, destination: str, settings: list) -> dict:
@@ -74,7 +85,7 @@ class Webhooks(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/webhooks"
-        params = {"destination": destination, "settings": settings}
+        params = self._build_subscribe_webhook_params(destination, settings)
         return self._send_api_request("post", url, data=params)
 
     def unsubscribe_webhook(self):
@@ -83,3 +94,21 @@ class Webhooks(Entity):
         """
         url = f"{self.crm_url}/api/v4/webhooks"
         return self._send_api_request("delete", url)
+
+    async def get_webhooks_async(self, distansion: Optional[str] = None) -> dict:
+        """Async version of get_webhooks."""
+        url = self._build_get_webhooks_url(distansion)
+        return await self._send_api_request_async("get", url)
+
+    async def subscribe_webhook_async(
+        self, destination: str, settings: list
+    ) -> dict:
+        """Async version of subscribe_webhook."""
+        url = f"{self.crm_url}/api/v4/webhooks"
+        params = self._build_subscribe_webhook_params(destination, settings)
+        return await self._send_api_request_async("post", url, data=params)
+
+    async def unsubscribe_webhook_async(self):
+        """Async version of unsubscribe_webhook."""
+        url = f"{self.crm_url}/api/v4/webhooks"
+        return await self._send_api_request_async("delete", url)

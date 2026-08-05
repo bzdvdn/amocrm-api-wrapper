@@ -4,6 +4,84 @@ from typing import Optional, Union
 from urllib.parse import urlencode
 
 class Unsorted(Entity):
+    def _build_get_unsorted_leads_url(
+        self,
+        page: int,
+        limit: int,
+        filter_by_uids: Union[str, list, None],
+        filter_by_pipeline_id: Union[str, list, None],
+        filter_by_category: Union[str, list, None],
+        order_by: Optional[dict],
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/leads/unsorted"
+        params: dict = {"limit": limit, "page": page}
+        orders = {}
+        if filter_by_uids:
+            params["filter[uid]"] = filter_by_uids  # type: ignore
+        if filter_by_category:
+            params["filter[category]"] = filter_by_category  # type: ignore
+        if filter_by_pipeline_id:
+            params["filter[pipeline_id]"] = filter_by_pipeline_id  # type: ignore
+        if order_by:
+            orders = {f"order[{key}]": value for key, value in order_by.items()}
+        url = f"{url}?{urlencode(params)}"
+        if orders:
+            url = f"{url}&{urlencode(orders)}"
+        return url
+
+    def _build_create_unsorted_params(
+        self,
+        source_uid: str,
+        source_name: str,
+        metadata: dict,
+        contact: dict,
+        lead: dict,
+        comapany: dict,
+        pipeline_id: Optional[int],
+        created_at: Optional[int],
+        request_id: Optional[str],
+    ) -> dict:
+        params: dict = {
+            "source_uid": source_uid,
+            "source_name": source_name,
+            "metadata": metadata,
+            "contact": contact,
+        }
+        _embedded = {"contacts": [contact], "leads": [lead], "companies": [comapany]}
+        params["_embedded"] = _embedded
+        if request_id:
+            params["request_id"] = request_id
+        if pipeline_id:
+            params["pipeline_id"] = pipeline_id  # type: ignore
+        if created_at:
+            params["created_at"] = created_at  # type: ignore
+        return params
+
+    def _build_accept_unsorted_params(
+        self,
+        user_id: int,
+        status_id: int,
+    ) -> dict:
+        return {"user_id": user_id, "status_id": status_id}
+
+    def _build_get_summary_unsorted_url(
+        self,
+        uid: Union[str, list, None],
+        created_at__from: Optional[str],
+        created_at__to: Optional[str],
+        pipeline_id: Union[str, list, None],
+    ) -> str:
+        params: dict = {}
+        if uid:
+            params["filter[uid]"] = uid
+        if created_at__from:
+            params["filter[created_at][from]"] = created_at__from
+        if created_at__to:
+            params["filter[created_at][to]"] = created_at__to
+        if pipeline_id:
+            params["filter[pipeline_id]"] = pipeline_id
+        return f"{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}"
+
     def get_unsorted_leads(
         self,
         page: int = 1,
@@ -82,20 +160,9 @@ class Unsorted(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/leads/unsorted"
-        params: dict = {"limit": limit, "page": page}
-        orders = {}
-        if filter_by_uids:
-            params["filter[uid]"] = filter_by_uids  # type: ignore
-        if filter_by_category:
-            params["filter[category]"] = filter_by_category  # type: ignore
-        if filter_by_pipeline_id:
-            params["filter[pipeline_id]"] = filter_by_pipeline_id  # type: ignore
-        if order_by:
-            orders = {f"order[{key}]": value for key, value in order_by.items()}
-        url = f"{url}?{urlencode(params)}"
-        if orders:
-            url = f"{url}&{urlencode(orders)}"
+        url = self._build_get_unsorted_leads_url(
+            page, limit, filter_by_uids, filter_by_pipeline_id, filter_by_category, order_by
+        )
         return self._send_api_request("get", url)
 
     def get_unsorted_by_uid(self, uid: str) -> dict:
@@ -225,20 +292,17 @@ class Unsorted(Entity):
         }
         """
         url = f"{self.crm_url}/api/v4/leads/unsorted/{entity}"
-        params: dict = {
-            "source_uid": source_uid,
-            "source_name": source_name,
-            "metadata": metadata,
-            "contact": contact,
-        }
-        _embedded = {"contacts": [contact], "leads": [lead], "companies": [comapany]}
-        params["_embedded"] = _embedded
-        if request_id:
-            params["request_id"] = request_id
-        if pipeline_id:
-            params["pipeline_id"] = pipeline_id  # type: ignore
-        if created_at:
-            params["created_at"] = created_at  # type: ignore
+        params = self._build_create_unsorted_params(
+            source_uid,
+            source_name,
+            metadata,
+            contact,
+            lead,
+            comapany,
+            pipeline_id,
+            created_at,
+            request_id,
+        )
         return self._send_api_request("post", url, [params])
 
     def create_unsorted_by_sip(
@@ -317,7 +381,7 @@ class Unsorted(Entity):
             }
         """
         url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/accept"
-        params = {"user_id": user_id, "status_id": status_id}
+        params = self._build_accept_unsorted_params(user_id, status_id)
         return self._send_api_request("post", url, params)
 
     def decline_unsorted(self, uid: str, user_id: int) -> dict:
@@ -427,14 +491,120 @@ class Unsorted(Entity):
                 }
             }
         """
-        params = {}
-        if uid:
-            params["filter[uid]"] = uid
-        if created_at__from:
-            params["filter[created_at][from]"] = created_at__from
-        if created_at__to:
-            params["filter[created_at][to]"] = created_at__to
-        if pipeline_id:
-            params["filter[pipeline_id]"] = pipeline_id
-        url = f"{self.crm_url}/api/v4/leads/unsorted/summary?{urlencode(params)}"
+        url = self._build_get_summary_unsorted_url(
+            uid, created_at__from, created_at__to, pipeline_id
+        )
         return self._send_api_request("get", url)
+
+    async def get_unsorted_leads_async(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        filter_by_uids: Union[str, list, None] = None,
+        filter_by_pipeline_id: Union[str, list, None] = None,
+        filter_by_category: Union[str, list, None] = None,
+        order_by: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_unsorted_leads."""
+        url = self._build_get_unsorted_leads_url(
+            page, limit, filter_by_uids, filter_by_pipeline_id, filter_by_category, order_by
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def get_unsorted_by_uid_async(self, uid: str) -> dict:
+        """Async version of get_unsorted_by_uid."""
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}"
+        return await self._send_api_request_async("get", url)
+
+    async def _create_unsorted_async(
+        self,
+        entity: str,
+        source_uid: str,
+        source_name: str,
+        metadata: dict,
+        contact: dict,
+        lead: dict,
+        comapany: dict,
+        pipeline_id: Optional[int] = None,
+        created_at: Optional[int] = None,
+        request_id: Optional[str] = None,
+    ) -> dict:
+        """Async version of _create_unsorted."""
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{entity}"
+        params = self._build_create_unsorted_params(
+            source_uid,
+            source_name,
+            metadata,
+            contact,
+            lead,
+            comapany,
+            pipeline_id,
+            created_at,
+            request_id,
+        )
+        return await self._send_api_request_async("post", url, [params])
+
+    async def create_unsorted_by_sip_async(
+        self,
+        source_uid: str,
+        source_name: str,
+        metadata: dict,
+        contact: dict,
+        lead: dict,
+        comapany: dict,
+        pipeline_id: Optional[int] = None,
+        created_at: Optional[int] = None,
+        request_id: Optional[str] = None,
+    ) -> dict:
+        """Async version of create_unsorted_by_sip."""
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return await self._create_unsorted_async(entity="sip", **params)
+
+    async def create_unsorted_by_form_async(
+        self,
+        source_uid: str,
+        source_name: str,
+        metadata: dict,
+        contact: dict,
+        lead: dict,
+        comapany: dict,
+        pipeline_id: Optional[int] = None,
+        created_at: Optional[int] = None,
+        request_id: Optional[str] = None,
+    ) -> dict:
+        """Async version of create_unsorted_by_form."""
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return await self._create_unsorted_async(entity="form", **params)
+
+    async def accept_unsorted_async(
+        self, uid: str, user_id: int, status_id: int
+    ) -> dict:
+        """Async version of accept_unsorted."""
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/accept"
+        params = self._build_accept_unsorted_params(user_id, status_id)
+        return await self._send_api_request_async("post", url, params)
+
+    async def decline_unsorted_async(self, uid: str, user_id: int) -> dict:
+        """Async version of decline_unsorted."""
+        url = f"{self.crm_url}/api/v4/leads/unsorted/{uid}/decline"
+        params = {"user_id": user_id}
+        return await self._send_api_request_async("delete", url, params)
+
+    async def link_unsorted_async(self, uid: str, user_id: int, link: dict) -> dict:
+        """Async version of link_unsorted."""
+        url = f"{self.crm_url}api/v4/leads/unsorted/{uid}/link"
+        params = {"user_id": user_id, "link": link}
+        return await self._send_api_request_async("post", url, params)
+
+    async def get_summary_unsorted_async(
+        self,
+        uid: Union[str, list, None] = None,
+        created_at__from: Optional[str] = None,
+        created_at__to: Optional[str] = None,
+        pipeline_id: Union[str, list, None] = None,
+    ) -> dict:
+        """Async version of get_summary_unsorted."""
+        url = self._build_get_summary_unsorted_url(
+            uid, created_at__from, created_at__to, pipeline_id
+        )
+        return await self._send_api_request_async("get", url)

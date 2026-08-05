@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from unittest import mock
 
@@ -76,6 +77,43 @@ class TestEntityContracts(unittest.TestCase):
                     )
                     if case.body is not None:
                         self.assertEqual(actual_data, case.body, case.method_name)
+
+
+class TestEntityContractsAsync(unittest.TestCase):
+    def setUp(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+
+    def tearDown(self):
+        self.loop.close()
+
+    def test_cases(self):
+        async def run():
+            client = make_client()
+            with mock.patch.object(client, "_send_api_request_async") as mock_send:
+                mock_send.return_value = {}
+                for case in CASES:
+                    with self.subTest(method=case.method_name):
+                        await getattr(client, case.method_name + "_async")(
+                            *case.args, **case.kwargs
+                        )
+                        call = mock_send.call_args
+                        actual_method, actual_url = call[0][0], call[0][1]
+                        actual_data = call[0][2] if len(call[0]) > 2 else None
+                        self.assertEqual(actual_method, case.http_method, case.method_name)
+                        self.assertTrue(
+                            actual_url.startswith("https://x.amocrm.ru"),
+                            (case.method_name, actual_url),
+                        )
+                        path = actual_url.split("?")[0]
+                        self.assertTrue(
+                            path.endswith(case.url_part),
+                            (case.method_name, actual_url, case.url_part),
+                        )
+                        if case.body is not None:
+                            self.assertEqual(actual_data, case.body, case.method_name)
+
+        self.loop.run_until_complete(run())
 
 
 class TestFilterQueryFalsy(unittest.TestCase):

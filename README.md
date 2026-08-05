@@ -6,6 +6,39 @@ Install using `pip`...
 
     pip install amocrm-api-wrapper
 
+## Async support
+
+Every method has an async twin with the `_async` suffix (e.g. `get_leads_async`).
+Async variants use `httpx.AsyncClient` natively and return awaitables:
+
+```python
+import asyncio
+from amocrm_api import AmoOAuthClient
+
+async def main():
+    client = AmoOAuthClient('<access_token>', '<refresh_token>', '<crm_url>', '<client_id>', '<client_secret>', '<redirect_uri>')
+    leads = await client.get_leads_async()
+    print(leads)
+    await client.close_async()
+
+asyncio.run(main())
+```
+
+For the legacy client the async session is initialized lazily on the first
+async call, no extra setup is required:
+
+```python
+import asyncio
+from amocrm_api import AmoLegacyClient
+
+async def main():
+    client = AmoLegacyClient('<login>', '<token>', '<crm_url>')
+    users = await client.get_users_async()
+    print(users)
+
+asyncio.run(main())
+```
+
 ## Usage
 
 =======

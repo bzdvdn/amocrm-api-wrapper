@@ -1,9 +1,12 @@
+import asyncio
 import logging
 from json import JSONDecodeError, loads
 from time import sleep
-from requests import Session, ConnectionError, ConnectTimeout, Response
 from typing import Optional, Any
 from urllib.parse import urlencode
+
+import httpx
+from httpx import AsyncClient, Client, Response
 
 from ..errors import AmoException
 
@@ -23,9 +26,13 @@ class Entity:
     timeout: Optional[float] = 30.0
     retry_sleep_base: float = 5.0
     retry_sleep_429: float = 20.0
-    _session: Session
+    _session: Client
+    _async_session: AsyncClient
 
-    def _init_session(self, headers: Optional[dict] = None) -> Session:
+    def _init_session(self, headers: Optional[dict] = None) -> Client:
+        raise NotImplementedError()
+
+    def _init_async_session(self, headers: Optional[dict] = None) -> AsyncClient:
         raise NotImplementedError()
 
     def update_session_params(self, params: dict) -> None:
@@ -35,6 +42,23 @@ class Entity:
             params (dict): like {'IF-MODIFIED-SINCE': <datetime>}
         """
         self._session = self._init_session(params)
+
+    async def update_session_params_async(self, params: dict) -> None:
+        """update async session
+
+        Args:
+            params (dict): like {'IF-MODIFIED-SINCE': <datetime>}
+        """
+        self._async_session = await self._init_async_session(params)
+
+    def close(self) -> None:
+        """Close the underlying sync HTTP session."""
+        self._session.close()
+
+    async def close_async(self) -> None:
+        """Close the underlying async HTTP session."""
+        if hasattr(self, "_async_session"):
+            await self._async_session.aclose()
 
     def _parse_response_body(self, response: Response) -> dict:
         raw_data = response.content.decode("utf-8")
@@ -59,38 +83,105 @@ class Entity:
             response = self._session.__getattribute__(method)(
                 url, json=data, timeout=self.timeout
             )
-            if response.status_code == 204:
-                return {}
-            elif response.status_code == 429:
-                if _retry_counter >= self.max_retries:
-                    logger.error("429 http error after %s retries", _retry_counter)
-                    raise AmoException({"error": "too many requests"}, code=429)
-                delay = self._retry_after_delay(response, _retry_counter)
-                logger.warning(
-                    "429 http error, sleep %s sec, retry %s",
-                    delay,
-                    _retry_counter + 1,
-                )
-                sleep(delay)
-                return self._send_api_request(
-                    method, url, data, _retry_counter + 1
-                )
-            data = self._parse_response_body(response)
-            if "error" in data or response.status_code >= 400:
-                raise AmoException(data, code=response.status_code)
-            json_data = data["response"] if "response" in data else data
-            return json_data
-        except JSONDecodeError as e:
-            raise AmoException({"error": str(e)}, code=500)
-        except (ConnectTimeout, ConnectionError):
+            return self._finalize_response(
+                response, method, url, data, _retry_counter, sleep
+            )
+        except (httpx.ConnectTimeout, httpx.ConnectError):
             if _retry_counter >= self.max_retries:
                 raise
             sleep(self.retry_sleep_base)
             self._update_session()
             return self._send_api_request(method, url, data, _retry_counter + 1)
 
+    async def _send_api_request_async(
+        self, method: str, url: str, data: Any = None, _retry_counter: int = 0
+    ) -> dict:
+        try:
+            response = await self._async_session.__getattribute__(method)(
+                url, json=data, timeout=self.timeout
+            )
+            return await self._finalize_response_async(
+                response, method, url, data, _retry_counter
+            )
+        except (httpx.ConnectTimeout, httpx.ConnectError):
+            if _retry_counter >= self.max_retries:
+                raise
+            await asyncio.sleep(self.retry_sleep_base)
+            await self._update_session_async()
+            return await self._send_api_request_async(
+                method, url, data, _retry_counter + 1
+            )
+
+    def _finalize_response(
+        self,
+        response: Response,
+        method: str,
+        url: str,
+        data: Any,
+        _retry_counter: int,
+        sleeper,
+    ) -> dict:
+        if response.status_code == 204:
+            return {}
+        if response.status_code == 429:
+            if _retry_counter >= self.max_retries:
+                logger.error("429 http error after %s retries", _retry_counter)
+                raise AmoException({"error": "too many requests"}, code=429)
+            delay = self._retry_after_delay(response, _retry_counter)
+            logger.warning(
+                "429 http error, sleep %s sec, retry %s",
+                delay,
+                _retry_counter + 1,
+            )
+            sleeper(delay)
+            return self._send_api_request(method, url, data, _retry_counter + 1)
+        try:
+            body = self._parse_response_body(response)
+        except JSONDecodeError as e:
+            raise AmoException({"error": str(e)}, code=500)
+        if "error" in body or response.status_code >= 400:
+            raise AmoException(body, code=response.status_code)
+        return body["response"] if isinstance(body, dict) and "response" in body else body
+
+    async def _finalize_response_async(
+        self,
+        response: Response,
+        method: str,
+        url: str,
+        data: Any,
+        _retry_counter: int,
+    ) -> dict:
+        if response.status_code == 204:
+            return {}
+        if response.status_code == 429:
+            if _retry_counter >= self.max_retries:
+                logger.error("429 http error after %s retries", _retry_counter)
+                raise AmoException({"error": "too many requests"}, code=429)
+            delay = self._retry_after_delay(response, _retry_counter)
+            logger.warning(
+                "429 http error, sleep %s sec, retry %s",
+                delay,
+                _retry_counter + 1,
+            )
+            await asyncio.sleep(delay)
+            return await self._send_api_request_async(
+                method, url, data, _retry_counter + 1
+            )
+        try:
+            body = self._parse_response_body(response)
+        except JSONDecodeError as e:
+            raise AmoException({"error": str(e)}, code=500)
+        if "error" in body or response.status_code >= 400:
+            raise AmoException(body, code=response.status_code)
+        return body["response"] if isinstance(body, dict) and "response" in body else body
+
     def _update_session(self):
         self._session = self._init_session(dict(self._session.headers))
+
+    async def _update_session_async(self):
+        self._async_session = await self._init_async_session(
+            dict(self._async_session.headers)
+        )
 
     def _create_filter_query(self, filters: dict) -> dict:
         filter_query = {}
@@ -116,7 +207,7 @@ class Entity:
         filter_query.update({f"filter[{k}]": v for k, v in filters.items()})
         return filter_query
 
-    def _get_entities(
+    def _build_get_entities_url(
         self,
         entity: str,
         limit: int = 250,
@@ -125,7 +216,7 @@ class Entity:
         filters: Optional[dict] = None,
         filter_ids: Optional[list] = None,
         order: Optional[dict] = None,
-    ) -> dict:
+    ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}"
         params: dict = {"limit": limit, "page": page}
         if with_params:
@@ -139,8 +230,37 @@ class Entity:
         if order:
             order_query = {f"order[{k}]": v for k, v in order.items()}
             params.update(order_query)
-        url = f"{url}?{urlencode(params)}"
+        return f"{url}?{urlencode(params)}"
+
+    def _get_entities(
+        self,
+        entity: str,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        url = self._build_get_entities_url(
+            entity, limit, page, with_params, filters, filter_ids, order
+        )
         return self._send_api_request("get", url)
+
+    async def _get_entities_async(
+        self,
+        entity: str,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        url = self._build_get_entities_url(
+            entity, limit, page, with_params, filters, filter_ids, order
+        )
+        return await self._send_api_request_async("get", url)
 
     def _get_entity_links(
         self, entity: str, entity_id: int, filters: Optional[dict] = None
@@ -151,13 +271,34 @@ class Entity:
             url = f"{url}?{urlencode(filter_query)}"
         return self._send_api_request("get", url)
 
+    async def _get_entity_links_async(
+        self, entity: str, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/links"
+        if filters:
+            filter_query = {f"filter[{k}]": v for k, v in filters.items()}
+            url = f"{url}?{urlencode(filter_query)}"
+        return await self._send_api_request_async("get", url)
+
     def _link_entities(self, entity: str, entity_id: int, objects: list) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/link"
         return self._send_api_request("post", url, objects)
 
+    async def _link_entities_async(
+        self, entity: str, entity_id: int, objects: list
+    ) -> dict:
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/link"
+        return await self._send_api_request_async("post", url, objects)
+
     def _unlink_entities(self, entity: str, entity_id: int, objects: list) -> dict:
         url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks"
         return self._send_api_request("post", url, objects)
+
+    async def _unlink_entities_async(
+        self, entity: str, entity_id: int, objects: list
+    ) -> dict:
+        url = f"{self.crm_url}/api/v4/{entity}/{entity_id}/unlinks"
+        return await self._send_api_request_async("post", url, objects)
 
     def get_account_info(
         self,
@@ -293,19 +434,53 @@ class Entity:
             url += "?with=" + ",".join(p for p in with_params)
         return self._send_api_request("get", url)
 
+    async def get_account_info_async(
+        self,
+        with_amojo_id: bool = False,
+        with_amojo_rights: bool = False,
+        with_users_groups: bool = False,
+        with_task_types: bool = False,
+        with_version: bool = False,
+        with_ventity_names: bool = False,
+        with_datetime_settings: bool = False,
+    ) -> dict:
+        params = {k.replace("with_", ""): v for k, v in locals().items() if k != "self"}
+        with_params = [param for param, value in params.items() if value]
+        url = f"{self.crm_url}/api/v4/account"
+        if with_params:
+            url += "?with=" + ",".join(p for p in with_params)
+        return await self._send_api_request_async("get", url)
+
     def _create_or_update_entities(
         self, entity: str, objects: list, update: bool = False
     ) -> dict:
         """method for create or update entities
-    
+
         Args:
             entity (str): name of entities like 'leads'
             objects (list): list of obejcts
             update (bool): if True http method patch else post
-    
+
         Returns:
             dict: query result
         """
         url = f"{self.crm_url}/api/v4/{entity}"
         http_method = "patch" if update else "post"
         return self._send_api_request(http_method, url, objects)
+
+    async def _create_or_update_entities_async(
+        self, entity: str, objects: list, update: bool = False
+    ) -> dict:
+        """async method for create or update entities
+
+        Args:
+            entity (str): name of entities like 'leads'
+            objects (list): list of obejcts
+            update (bool): if True http method patch else post
+
+        Returns:
+            dict: query result
+        """
+        url = f"{self.crm_url}/api/v4/{entity}"
+        http_method = "patch" if update else "post"
+        return await self._send_api_request_async(http_method, url, objects)

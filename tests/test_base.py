@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest import mock
 
-from requests import Session, ConnectionError
+from httpx import Client, ConnectError
 
 from amocrm_api.base import BaseClient
 from amocrm_api.errors import AmoException
@@ -28,7 +28,7 @@ def make_client() -> BaseClient:
     client.timeout = 30.0
     client.retry_sleep_429 = 20.0
     client.retry_sleep_base = 5.0
-    client._session = Session()
+    client._session = Client()
     return client
 
 
@@ -107,9 +107,9 @@ class TestSendApiRequest(unittest.TestCase):
     def test_connection_error_retries_then_reraises(self, mock_sleep):
         client = make_client()
         with mock.patch.object(client._session, "get") as mock_get:
-            mock_get.side_effect = ConnectionError
+            mock_get.side_effect = ConnectError("boom")
             with mock.patch.object(client, "_update_session") as mock_update:
-                with self.assertRaises(ConnectionError):
+                with self.assertRaises(ConnectError):
                     client._send_api_request("get", "http://x")
             self.assertEqual(mock_update.call_count, 3)
 
@@ -122,6 +122,76 @@ class TestSendApiRequest(unittest.TestCase):
             with self.assertRaises(AmoException) as ctx:
                 client._send_api_request("get", "http://x")
         self.assertEqual(ctx.exception.code, 500)
+
+
+class TestSendApiRequestAsync(unittest.TestCase):
+    async def _call(self, client, *args, **kwargs):
+        return await client._send_api_request_async(*args, **kwargs)
+
+    def test_204_returns_empty_dict(self):
+        import asyncio
+
+        client = make_client()
+        client._async_session = mock.Mock()
+        with mock.patch.object(
+            client._async_session, "get", new=mock.AsyncMock()
+        ) as mock_get:
+            mock_get.return_value = FakeResponse(status_code=204)
+            result = asyncio.run(self._call(client, "get", "http://x"))
+        self.assertEqual(result, {})
+        mock_get.assert_called_once_with("http://x", json=None, timeout=30.0)
+
+    @mock.patch("amocrm_api.entities.base.asyncio.sleep")
+    def test_429_retries_then_exhausts(self, mock_sleep):
+        import asyncio
+
+        async def sleep(*args):
+            return None
+
+        mock_sleep.side_effect = sleep
+        client = make_client()
+        client._async_session = mock.Mock()
+        with mock.patch.object(
+            client._async_session, "get", new=mock.AsyncMock()
+        ) as mock_get:
+            mock_get.side_effect = [
+                FakeResponse(status_code=429),
+                FakeResponse(status_code=429),
+                FakeResponse(status_code=429),
+                FakeResponse(body=json.dumps({"ok": True}).encode()),
+            ]
+            result = asyncio.run(self._call(client, "get", "http://x"))
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(mock_get.call_count, 4)
+        self.assertEqual(mock_sleep.call_count, 3)
+
+    @mock.patch("amocrm_api.entities.base.asyncio.sleep")
+    def test_connection_error_retries_then_reraises(self, mock_sleep):
+        import asyncio
+
+        async def sleep(*args):
+            return None
+
+        mock_sleep.side_effect = sleep
+        client = make_client()
+        client._async_session = mock.Mock()
+
+        async def boom(*args, **kwargs):
+            raise ConnectError("boom")
+
+        mock_get = mock.AsyncMock(side_effect=boom)
+        with mock.patch.object(client._async_session, "get", mock_get):
+            with mock.patch.object(
+                client, "_update_session_async"
+            ) as mock_update:
+
+                async def update():
+                    return None
+
+                mock_update.side_effect = update
+                with self.assertRaises(ConnectError):
+                    asyncio.run(self._call(client, "get", "http://x"))
+            self.assertEqual(mock_update.call_count, 3)
 
 
 class TestCreateFilterQuery(unittest.TestCase):
@@ -212,7 +282,7 @@ class TestOAuthClient(unittest.TestCase):
         )
 
     def test_update_tokens_raises_on_4xx(self):
-        with mock.patch("amocrm_api.oauth_client.post") as mock_post:
+        with mock.patch("amocrm_api.oauth_client.httpx.post") as mock_post:
             resp = mock.Mock()
             resp.status_code = 400
             resp.json.return_value = {"error": "invalid_grant"}
@@ -221,7 +291,7 @@ class TestOAuthClient(unittest.TestCase):
                 self.client.update_tokens()
             self.assertEqual(ctx.exception.code, 400)
 
-    @mock.patch("amocrm_api.oauth_client.post")
+    @mock.patch("amocrm_api.oauth_client.httpx.post")
     def test_update_tokens_succeeds(self, mock_post):
         resp = mock.Mock()
         resp.status_code = 200
@@ -234,7 +304,7 @@ class TestOAuthClient(unittest.TestCase):
         self.assertEqual(self.client.access_token, "a2")
         self.assertEqual(self.client.refresh_token, "r2")
 
-    @mock.patch("amocrm_api.oauth_client.post")
+    @mock.patch("amocrm_api.oauth_client.httpx.post")
     def test_401_triggers_token_refresh_once(self, mock_post):
         refresh = mock.Mock()
         refresh.status_code = 200
@@ -253,6 +323,76 @@ class TestOAuthClient(unittest.TestCase):
             result = self.client._send_api_request("get", "http://x")
             self.assertEqual(result, {"ok": True})
             self.assertEqual(mock_send.call_count, 2)
+
+
+class TestOAuthClientAsync(unittest.TestCase):
+    def setUp(self):
+        import asyncio
+
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.client = AmoOAuthClient(
+            access_token="a",
+            refresh_token="r",
+            crm_url="https://example.amocrm.ru",
+            client_id="cid",
+            client_secret="secret",
+            redirect_uri="https://example.ru/cb",
+        )
+
+    def tearDown(self):
+        self.loop.close()
+
+    def test_update_tokens_async_succeeds(self):
+        async def run():
+            with mock.patch(
+                "amocrm_api.oauth_client.httpx.AsyncClient"
+            ) as mock_ac:
+                async_client = mock.Mock()
+                async with mock_ac:
+                    pass
+                mock_ac.return_value.__aenter__.return_value = async_client
+                resp = mock.Mock()
+                resp.status_code = 200
+                resp.json.return_value = {
+                    "access_token": "a2",
+                    "refresh_token": "r2",
+                }
+                async_client.post = mock.AsyncMock(return_value=resp)
+                await self.client.update_tokens_async()
+            self.assertEqual(self.client.access_token, "a2")
+            self.assertEqual(self.client.refresh_token, "r2")
+
+        self.loop.run_until_complete(run())
+
+    def test_401_triggers_token_refresh_once_async(self):
+        async def run():
+            with mock.patch(
+                "amocrm_api.oauth_client.httpx.AsyncClient"
+            ) as mock_ac:
+                async_client = mock.Mock()
+                mock_ac.return_value.__aenter__.return_value = async_client
+                resp = mock.Mock()
+                resp.status_code = 200
+                resp.json.return_value = {
+                    "access_token": "a2",
+                    "refresh_token": "r2",
+                }
+                async_client.post = mock.AsyncMock(return_value=resp)
+                with mock.patch.object(
+                    BaseClient, "_send_api_request_async"
+                ) as mock_send:
+                    mock_send.side_effect = [
+                        AmoException({"title": "unauthorized"}, code=401),
+                        {"ok": True},
+                    ]
+                    result = await self.client._send_api_request_async(
+                        "get", "http://x"
+                    )
+                    self.assertEqual(result, {"ok": True})
+                    self.assertEqual(mock_send.call_count, 2)
+
+        self.loop.run_until_complete(run())
 
 
 if __name__ == "__main__":

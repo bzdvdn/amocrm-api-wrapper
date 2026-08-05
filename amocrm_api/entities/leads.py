@@ -285,3 +285,47 @@ class Leads(Entity):
         """
         params: dict = {k: v for k, v in locals().items() if k != "self"}
         return self._get_entities("leads", **params)
+
+    async def link_leads_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of link_leads_entity."""
+        return await self._link_entities_async("leads", entity_id, objects)
+
+    async def unlink_leads_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of unlink_leads_entity."""
+        return await self._unlink_entities_async("leads", entity_id, objects)
+
+    async def get_leads_links_async(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        """Async version of get_leads_links."""
+        return await self._get_entity_links_async("leads", entity_id, filters)
+
+    async def create_leads_async(self, objects: list) -> dict:
+        """Async version of create_leads."""
+        return await self._create_or_update_entities_async("leads", objects)
+
+    async def update_leads_async(self, objects: list) -> dict:
+        """Async version of update_leads."""
+        return await self._create_or_update_entities_async("leads", objects, True)
+
+    async def get_lead_async(self, lead_id: int) -> dict:
+        """Async version of get_lead."""
+        url = f"{self.crm_url}/api/v4/leads/{lead_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def get_leads_async(
+        self,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        filter_ids: Optional[list] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_leads."""
+        params: dict = {k: v for k, v in locals().items() if k != "self"}
+        return await self._get_entities_async("leads", **params)

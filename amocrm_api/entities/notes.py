@@ -4,6 +4,93 @@ from typing import Optional, Union
 from urllib.parse import urlencode
 
 class Notes(Entity):
+    def _build_get_notes_by_entity_type_url(
+        self,
+        entity_type: str,
+        page: int,
+        limit: int,
+        filter_by_id: Union[int, list, None],
+        filter_by_entity_id: Optional[list],
+        filter_by_note_type: Optional[Union[list, str]],
+        filter_by_updated_at: Optional[int],
+        filter_by_updated_at_from: Optional[int],
+        filter_by_updated_at_to: Optional[int],
+        order_by_updated_at: str,
+        order_by_id: str,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        params: dict = {"page": page, "limit": limit}
+        if filter_by_id:
+            params["filter[id]"] = filter_by_id  # type: ignore
+        if filter_by_note_type:
+            params["filter[note_type]"] = filter_by_note_type  # type: ignore
+        if filter_by_entity_id:
+            params["filter[entity_id]"] = filter_by_entity_id  # type: ignore
+        if filter_by_updated_at:
+            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
+        if filter_by_updated_at_from:
+            params["filter[updated_at][from]"] = filter_by_updated_at_from
+        if filter_by_updated_at_to:
+            params["filter[updated_at][to]"] = filter_by_updated_at_to
+        if order_by_updated_at:
+            params["order[updated_at]"] = order_by_updated_at  # type: ignore
+        if order_by_id:
+            params["order[id]"] = order_by_id  # type: ignore
+
+        return f"{url}?{urlencode(params)}"
+
+    def _build_get_notes_by_entity_type_and_entity_id_url(
+        self,
+        entity_type: str,
+        entity_id: int,
+        page: int,
+        limit: int,
+        filter_by_id: Union[int, list, None],
+        filter_by_note_type: Optional[Union[list, str]],
+        filter_by_updated_at: Optional[int],
+        filter_by_updated_at_from: Optional[int],
+        filter_by_updated_at_to: Optional[int],
+        order_by_updated_at: str,
+        order_by_id: str,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
+        params: dict = {"page": page, "limit": limit}
+        if filter_by_id:
+            params["filter[id]"] = filter_by_id  # type: ignore
+        if filter_by_note_type:
+            params["filter[note_type]"] = filter_by_note_type  # type: ignore
+        if filter_by_updated_at:
+            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
+        if filter_by_updated_at_from:
+            params["filter[updated_at][from]"] = filter_by_updated_at_from
+        if filter_by_updated_at_to:
+            params["filter[updated_at][to]"] = filter_by_updated_at_to
+        if order_by_updated_at:
+            params["order[updated_at]"] = order_by_updated_at  # type: ignore
+        if order_by_id:
+            params["order[id]"] = order_by_id  # type: ignore
+
+        return f"{url}?{urlencode(params)}"
+
+    def _build_get_entity_note_url(
+        self,
+        entity_type: str,
+        id_: int,
+        entity_id: Optional[int],
+    ) -> str:
+        if entity_id:
+            return f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
+        return f"{self.crm_url}/api/v4/{entity_type}/notes/{id_}"
+
+    def _build_notes_url(
+        self,
+        entity_type: str,
+        entity_id: Optional[int],
+    ) -> str:
+        if entity_id:
+            return f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
+        return f"{self.crm_url}/api/v4/{entity_type}/notes"
+
     def get_notes_by_entity_type(
         self,
         entity_type: str,
@@ -91,26 +178,19 @@ class Notes(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/{entity_type}/notes"
-        params: dict = {"page": page, "limit": limit}
-        if filter_by_id:
-            params["filter[id]"] = filter_by_id  # type: ignore
-        if filter_by_note_type:
-            params["filter[note_type]"] = filter_by_note_type  # type: ignore
-        if filter_by_entity_id:
-            params["filter[entity_id]"] = filter_by_entity_id  # type: ignore
-        if filter_by_updated_at:
-            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
-        if filter_by_updated_at_from:
-            params["filter[updated_at][from]"] = filter_by_updated_at_from
-        if filter_by_updated_at_to:
-            params["filter[updated_at][to]"] = filter_by_updated_at_to
-        if order_by_updated_at:
-            params["order[updated_at]"] = order_by_updated_at  # type: ignore
-        if order_by_id:
-            params["order[id]"] = order_by_id  # type: ignore
-    
-        url = f"{url}?{urlencode(params)}"
+        url = self._build_get_notes_by_entity_type_url(
+            entity_type,
+            page,
+            limit,
+            filter_by_id,
+            filter_by_entity_id,
+            filter_by_note_type,
+            filter_by_updated_at,
+            filter_by_updated_at_from,
+            filter_by_updated_at_to,
+            order_by_updated_at,
+            order_by_id,
+        )
         return self._send_api_request("get", url)
 
     def get_notes_by_entity_type_and_entity_id(
@@ -200,24 +280,19 @@ class Notes(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
-        params: dict = {"page": page, "limit": limit}
-        if filter_by_id:
-            params["filter[id]"] = filter_by_id  # type: ignore
-        if filter_by_note_type:
-            params["filter[note_type]"] = filter_by_note_type  # type: ignore
-        if filter_by_updated_at:
-            params["filter[updated_at]"] = filter_by_updated_at  # type: ignore
-        if filter_by_updated_at_from:
-            params["filter[updated_at][from]"] = filter_by_updated_at_from
-        if filter_by_updated_at_to:
-            params["filter[updated_at][to]"] = filter_by_updated_at_to
-        if order_by_updated_at:
-            params["order[updated_at]"] = order_by_updated_at  # type: ignore
-        if order_by_id:
-            params["order[id]"] = order_by_id  # type: ignore
-    
-        url = f"{url}?{urlencode(params)}"
+        url = self._build_get_notes_by_entity_type_and_entity_id_url(
+            entity_type,
+            entity_id,
+            page,
+            limit,
+            filter_by_id,
+            filter_by_note_type,
+            filter_by_updated_at,
+            filter_by_updated_at_from,
+            filter_by_updated_at_to,
+            order_by_updated_at,
+            order_by_id,
+        )
         return self._send_api_request("get", url)
 
     def get_entity_note(
@@ -252,10 +327,7 @@ class Notes(Entity):
                 }
             }
         """
-        if entity_id:
-            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
-        else:
-            url = f"{self.crm_url}/api/v4/{entity_type}/notes/{id_}"
+        url = self._build_get_entity_note_url(entity_type, id_, entity_id)
         return self._send_api_request("get", url)
 
     def create_entity_note(
@@ -321,10 +393,7 @@ class Notes(Entity):
                 }
             }
         """
-        if entity_id:
-            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
-        else:
-            url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        url = self._build_notes_url(entity_type, entity_id)
         return self._send_api_request("post", url, data=notes)
 
     def update_entity_note(
@@ -419,8 +488,96 @@ class Notes(Entity):
                 }
             }
         """
-        if entity_id:
-            url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes"
-        else:
-            url = f"{self.crm_url}/api/v4/{entity_type}/notes"
+        url = self._build_notes_url(entity_type, entity_id)
         return self._send_api_request("patch", url, data=notes)
+
+    async def get_notes_by_entity_type_async(
+        self,
+        entity_type: str,
+        page: int = 1,
+        limit: int = 250,
+        filter_by_id: Union[int, list, None] = None,
+        filter_by_entity_id: Optional[list] = None,
+        filter_by_note_type: Optional[Union[list, str]] = None,
+        filter_by_updated_at: Optional[int] = None,
+        filter_by_updated_at_from: Optional[int] = None,
+        filter_by_updated_at_to: Optional[int] = None,
+        order_by_updated_at: str = "asc",
+        order_by_id: str = "asc",
+    ) -> dict:
+        """Async version of get_notes_by_entity_type."""
+        url = self._build_get_notes_by_entity_type_url(
+            entity_type,
+            page,
+            limit,
+            filter_by_id,
+            filter_by_entity_id,
+            filter_by_note_type,
+            filter_by_updated_at,
+            filter_by_updated_at_from,
+            filter_by_updated_at_to,
+            order_by_updated_at,
+            order_by_id,
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def get_notes_by_entity_type_and_entity_id_async(
+        self,
+        entity_type: str,
+        entity_id: int,
+        page: int = 1,
+        limit: int = 250,
+        filter_by_id: Union[int, list, None] = None,
+        filter_by_note_type: Optional[Union[list, str]] = None,
+        filter_by_updated_at: Optional[int] = None,
+        filter_by_updated_at_from: Optional[int] = None,
+        filter_by_updated_at_to: Optional[int] = None,
+        order_by_updated_at: str = "asc",
+        order_by_id: str = "asc",
+    ) -> dict:
+        """Async version of get_notes_by_entity_type_and_entity_id."""
+        url = self._build_get_notes_by_entity_type_and_entity_id_url(
+            entity_type,
+            entity_id,
+            page,
+            limit,
+            filter_by_id,
+            filter_by_note_type,
+            filter_by_updated_at,
+            filter_by_updated_at_from,
+            filter_by_updated_at_to,
+            order_by_updated_at,
+            order_by_id,
+        )
+        return await self._send_api_request_async("get", url)
+
+    async def get_entity_note_async(
+        self, entity_type: str, id_: int, entity_id: Optional[int] = None
+    ) -> dict:
+        """Async version of get_entity_note."""
+        url = self._build_get_entity_note_url(entity_type, id_, entity_id)
+        return await self._send_api_request_async("get", url)
+
+    async def create_entity_note_async(
+        self, entity_type: str, notes: list, entity_id: Optional[int] = None
+    ) -> dict:
+        """Async version of create_entity_note."""
+        url = self._build_notes_url(entity_type, entity_id)
+        return await self._send_api_request_async("post", url, data=notes)
+
+    async def update_entity_note_async(
+        self, entity_type: str, entity_id: int, id_: int, params: dict
+    ) -> dict:
+        """Async version of update_entity_note."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/{entity_id}/notes/{id_}"
+        return await self._send_api_request_async("patch", url, params)
+
+    async def update_entity_many_notes_async(
+        self,
+        entity_type: str,
+        notes: list,
+        entity_id: Optional[int] = None,
+    ) -> dict:
+        """Async version of update_entity_many_notes."""
+        url = self._build_notes_url(entity_type, entity_id)
+        return await self._send_api_request_async("patch", url, data=notes)

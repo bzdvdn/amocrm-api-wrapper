@@ -3,10 +3,18 @@ from .base import Entity
 from typing import Optional
 
 class CustomFields(Entity):
-    def _get_custom_fields(self, entity: str, page: Optional[int] = None) -> dict:
+    def _build_get_custom_fields_url(
+        self,
+        entity: str,
+        page: Optional[int],
+    ) -> str:
         url = f"{self.crm_url}/api/v4/{entity}/custom_fields"
         if page:
             url = f"{url}?page={page}"
+        return url
+
+    def _get_custom_fields(self, entity: str, page: Optional[int] = None) -> dict:
+        url = self._build_get_custom_fields_url(entity, page)
         return self._send_api_request("get", url)
 
     def get_contacts_custom_fields(self, page: Optional[int] = None) -> dict:
@@ -240,6 +248,148 @@ class CustomFields(Entity):
         """
         url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields"
         return self._send_api_request("patch", url, custom_fields)
+
+    async def _get_custom_fields_async(
+        self, entity: str, page: Optional[int] = None
+    ) -> dict:
+        """Async version of _get_custom_fields."""
+        url = self._build_get_custom_fields_url(entity, page)
+        return await self._send_api_request_async("get", url)
+
+    async def get_contacts_custom_fields_async(
+        self, page: Optional[int] = None
+    ) -> dict:
+        return await self._get_custom_fields_async("contacts", page=page)
+
+    async def get_leads_custom_fields_async(
+        self, page: Optional[int] = None
+    ) -> dict:
+        return await self._get_custom_fields_async("leads", page=page)
+
+    async def get_companies_custom_fields_async(
+        self, page: Optional[int] = None
+    ) -> dict:
+        return await self._get_custom_fields_async("companies", page=page)
+
+    async def get_customers_custom_fields_async(
+        self, page: Optional[int] = None
+    ) -> dict:
+        return await self._get_custom_fields_async("customers", page=page)
+
+    async def get_customer_segments_custom_fields_async(
+        self, page: Optional[int] = None
+    ) -> dict:
+        return await self._get_custom_fields_async("customers/segments", page=page)
+
+    async def get_catalog_custom_fields_async(self, catalog_id: str) -> dict:
+        return await self._get_custom_fields_async(f"catalogs/{catalog_id}")
+
+    async def _get_custom_field_by_entity_type_async(
+        self, entity_type: str, custom_field_id: int
+    ) -> dict:
+        """Async version of _get_custom_field_by_entity_type."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields/{custom_field_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def get_leads_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            "leads", custom_field_id
+        )
+
+    async def get_contacts_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            "contacts", custom_field_id
+        )
+
+    async def get_companies_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            "companies", custom_field_id
+        )
+
+    async def get_customers_custom_field_async(self, custom_field_id: int) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            "customers", custom_field_id
+        )
+
+    async def get_customers_segments_custom_field_async(
+        self, custom_field_id: int
+    ) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            "customers/segments", custom_field_id
+        )
+
+    async def get_catalog_custom_field_async(
+        self, catalog_id: int, custom_field_id: int
+    ) -> dict:
+        return await self._get_custom_field_by_entity_type_async(
+            f"catalogs/{catalog_id}", custom_field_id
+        )
+
+    async def _create_custom_fields_async(
+        self, entity_type: str, custom_fields: list
+    ) -> dict:
+        """Async version of _create_custom_fields."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields"
+        return await self._send_api_request_async("post", url, custom_fields)
+
+    async def create_leads_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._create_custom_fields_async("leads", custom_fields)
+
+    async def create_contacts_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._create_custom_fields_async("contacts", custom_fields)
+
+    async def create_companies_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._create_custom_fields_async("companies", custom_fields)
+
+    async def create_customers_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._create_custom_fields_async("customers", custom_fields)
+
+    async def create_customers_segments_custom_fields_async(
+        self, custom_fields: list
+    ) -> dict:
+        return await self._create_custom_fields_async(
+            "customers/segments", custom_fields
+        )
+
+    async def create_catalog_custom_fields_async(
+        self, catalog_id: int, custom_fields: list
+    ) -> dict:
+        return await self._create_custom_fields_async(
+            f"catalogs/{catalog_id}", custom_fields
+        )
+
+    async def _update_custom_fields_async(
+        self, entity_type: str, custom_fields: list
+    ) -> dict:
+        """Async version of _update_custom_fields."""
+        url = f"{self.crm_url}/api/v4/{entity_type}/custom_fields"
+        return await self._send_api_request_async("patch", url, custom_fields)
+
+    async def update_leads_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._update_custom_fields_async("leads", custom_fields)
+
+    async def update_contacts_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._update_custom_fields_async("contacts", custom_fields)
+
+    async def update_companies_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._update_custom_fields_async("companies", custom_fields)
+
+    async def update_customers_custom_fields_async(self, custom_fields: list) -> dict:
+        return await self._update_custom_fields_async("customers", custom_fields)
+
+    async def update_customers_segments_custom_fields_async(
+        self, custom_fields: list
+    ) -> dict:
+        return await self._update_custom_fields_async(
+            "customers/segments", custom_fields
+        )
+
+    async def update_catalog_custom_fields_async(
+        self, catalog_id: int, custom_fields: list
+    ) -> dict:
+        return await self._update_custom_fields_async(
+            f"catalogs/{catalog_id}", custom_fields
+        )
 
     def update_leads_custom_fields(self, custom_fields: list) -> dict:
         return self._update_custom_fields("leads", custom_fields)

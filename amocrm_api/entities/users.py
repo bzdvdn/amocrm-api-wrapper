@@ -3,6 +3,43 @@ from .base import Entity
 from urllib.parse import urlencode
 
 class Users(Entity):
+    def _build_get_users_url(
+        self,
+        page: int,
+        limit: int,
+        with_role: bool,
+        with_group: bool,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/users"
+        params = {"page": page, "limit": limit}
+        with_ = []
+        if with_group:
+            with_.append("group")
+        if with_role:
+            with_.append("role")
+        url = f"{url}?{urlencode(params)}"
+        if with_:
+            with_str = ",".join(i for i in with_)
+            url = f"{url}&with={with_str}"
+        return url
+
+    def _build_get_user_url(
+        self,
+        user_id: int,
+        with_role: bool,
+        with_group: bool,
+    ) -> str:
+        url = f"{self.crm_url}/api/v4/users/{user_id}"
+        with_ = []
+        if with_group:
+            with_.append("group")
+        if with_role:
+            with_.append("role")
+        if with_:
+            with_str = ",".join(i for i in with_)
+            url = f"{url}?with={with_str}"
+        return url
+
     def get_users(
         self,
         page: int = 1,
@@ -170,17 +207,7 @@ class Users(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/users"
-        params = {"page": page, "limit": limit}
-        with_ = []
-        if with_group:
-            with_.append("group")
-        if with_role:
-            with_.append("role")
-        url = f"{url}?{urlencode(params)}"
-        if with_:
-            with_str = ",".join(i for i in with_)
-            url = f"{url}&with={with_str}"
+        url = self._build_get_users_url(page, limit, with_role, with_group)
         return self._send_api_request("get", url)
 
     def get_user(
@@ -276,13 +303,26 @@ class Users(Entity):
                 }
             }
         """
-        url = f"{self.crm_url}/api/v4/users/{user_id}"
-        with_ = []
-        if with_group:
-            with_.append("group")
-        if with_role:
-            with_.append("role")
-        if with_:
-            with_str = ",".join(i for i in with_)
-            url = f"{url}?with={with_str}"
+        url = self._build_get_user_url(user_id, with_role, with_group)
         return self._send_api_request("get", url)
+
+    async def get_users_async(
+        self,
+        page: int = 1,
+        limit: int = 250,
+        with_role: bool = False,
+        with_group: bool = False,
+    ) -> dict:
+        """Async version of get_users."""
+        url = self._build_get_users_url(page, limit, with_role, with_group)
+        return await self._send_api_request_async("get", url)
+
+    async def get_user_async(
+        self,
+        user_id: int,
+        with_role: bool = False,
+        with_group: bool = False,
+    ) -> dict:
+        """Async version of get_user."""
+        url = self._build_get_user_url(user_id, with_role, with_group)
+        return await self._send_api_request_async("get", url)

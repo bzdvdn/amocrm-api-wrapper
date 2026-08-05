@@ -12,7 +12,7 @@ setup(
     version="0.0.20",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        "requests",
+        "httpx>=0.25",
     ],
     description="Amocrm api wrapper v4",
     author="bzdvdn",

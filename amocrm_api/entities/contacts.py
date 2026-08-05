@@ -253,3 +253,46 @@ class Contacts(Entity):
             }
         """
         return self._create_or_update_entities("contacts", contacts, True)
+
+    async def unlink_contacts_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of unlink_contacts_entity."""
+        return await self._unlink_entities_async("contacts", entity_id, objects)
+
+    async def link_contacts_entity_async(
+        self, entity_id: int, objects: list
+    ) -> dict:
+        """Async version of link_contacts_entity."""
+        return await self._link_entities_async("contacts", entity_id, objects)
+
+    async def get_contacts_links_async(
+        self, entity_id: int, filters: Optional[dict] = None
+    ) -> dict:
+        """Async version of get_contacts_links."""
+        return await self._get_entity_links_async("contacts", entity_id, filters)
+
+    async def get_contacts_async(
+        self,
+        limit: int = 250,
+        page: int = 1,
+        with_params: Optional[list] = None,
+        filters: Optional[dict] = None,
+        order: Optional[dict] = None,
+    ) -> dict:
+        """Async version of get_contacts."""
+        params = {k: v for k, v in locals().items() if k != "self"}
+        return await self._get_entities_async("contacts", **params)
+
+    async def get_contact_async(self, contact_id: int) -> dict:
+        """Async version of get_contact."""
+        url = f"{self.crm_url}/api/v4/contacts/{contact_id}"
+        return await self._send_api_request_async("get", url)
+
+    async def create_contacts_async(self, contacts: list) -> dict:
+        """Async version of create_contacts."""
+        return await self._create_or_update_entities_async("contacts", contacts)
+
+    async def update_contacts_async(self, contacts: list) -> dict:
+        """Async version of update_contacts."""
+        return await self._create_or_update_entities_async("contacts", contacts, True)
