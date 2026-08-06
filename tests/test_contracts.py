@@ -262,6 +262,9 @@ CASES = [
     ContractCase("execution_task", (5, True, "done"), {}, "patch",
                  "/api/v4/tasks/5",
                  body={"is_completed": True, "result": {"text": "done"}}),
+    ContractCase("execution_task", (5, False, "done"), {}, "patch",
+                 "/api/v4/tasks/5",
+                 body={"is_completed": False}),
     # unsorted
     ContractCase("get_unsorted_leads", (), {}, "get", "/api/v4/leads/unsorted"),
     ContractCase("get_unsorted_by_uid", ("abc",), {}, "get", "/api/v4/leads/unsorted/abc"),

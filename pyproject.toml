@@ -53,3 +53,8 @@ warn_redundant_casts = true
 [tool.ruff]
 line-length = 88
 target-version = "py310"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

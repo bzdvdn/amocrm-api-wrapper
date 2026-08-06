@@ -10,7 +10,10 @@ class Tasks(Entity):
         is_completed: bool,
         result: str,
     ) -> dict:
-        return {"is_completed": is_completed, "result": {"text": result}}
+        params: dict = {"is_completed": is_completed}
+        if is_completed:
+            params["result"] = {"text": result}
+        return params
 
     def get_tasks(
         self,

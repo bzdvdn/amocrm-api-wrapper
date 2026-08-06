@@ -88,9 +88,9 @@ class Entity:
             return self._finalize_response(
                 response, method, url, data, _retry_counter, sleep
             )
-        except (httpx.ConnectTimeout, httpx.ConnectError):
+        except (httpx.ConnectTimeout, httpx.ConnectError) as e:
             if _retry_counter >= self.max_retries:
-                raise
+                raise AmoException({"error": str(e)}, code=0)
             sleep(self.retry_sleep_base)
             self._update_session()
             return self._send_api_request(method, url, data, _retry_counter + 1)
@@ -105,9 +105,9 @@ class Entity:
             return await self._finalize_response_async(
                 response, method, url, data, _retry_counter
             )
-        except (httpx.ConnectTimeout, httpx.ConnectError):
+        except (httpx.ConnectTimeout, httpx.ConnectError) as e:
             if _retry_counter >= self.max_retries:
-                raise
+                raise AmoException({"error": str(e)}, code=0)
             await asyncio.sleep(self.retry_sleep_base)
             await self._update_session_async()
             return await self._send_api_request_async(
